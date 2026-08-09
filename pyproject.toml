@@ -1,0 +1,35 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version",
+    "package.json:version"
+]
+
+[tool.commitizen.questions]
+type = [
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "test",
+    "chore",
+    "perf",
+    "ci",
+    "build",
+    "revert"
+]
+scope = "What is the scope of this change (e.g. component or file name)? (optional)"
+subject = "Write a short, imperative description of the change:"
+body = "Provide a longer description of the change: (optional)"
+breaking = "Are there any breaking changes? (y/N)"
+breaking_change = "Describe the breaking changes:"
+issues = "Does this change affect any open issues? (y/N)"
+
+[tool.commitizen.style]
+commit_format = "{type}({scope}): {subject}"
+example = "feat(auth): add user authentication system"
+emoji = false
+max_line_length = 72

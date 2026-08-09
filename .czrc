@@ -1,0 +1,48 @@
+{
+  "path": "cz_conventional_commits",
+  "version": "1.0.0",
+  "use_shortcuts": false,
+  "style": {
+    "commit_format": "{type}({scope}): {subject}",
+    "example": "feat(auth): add user authentication system",
+    "emoji": false,
+    "skip_questions": [],
+    "max_line_length": 72
+  },
+  "questions": {
+    "type": {
+      "description": "Select the type of change you are committing:",
+      "enum": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "test",
+        "chore",
+        "perf",
+        "ci",
+        "build",
+        "revert"
+      ]
+    },
+    "scope": {
+      "description": "What is the scope of this change (e.g. component or file name)? (optional)"
+    },
+    "subject": {
+      "description": "Write a short, imperative description of the change:"
+    },
+    "body": {
+      "description": "Provide a longer description of the change: (optional)"
+    },
+    "breaking": {
+      "description": "Are there any breaking changes? (y/N)"
+    },
+    "breaking_change": {
+      "description": "Describe the breaking changes:"
+    },
+    "issues": {
+      "description": "Does this change affect any open issues? (y/N)"
+    }
+  }
+}
