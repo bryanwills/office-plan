@@ -1,0 +1,75 @@
+site_name: "[LLC NAME TBD] — Business Documentation"
+site_description: "Formation, compliance, infrastructure, and operating documentation"
+site_url: "https://docs.example.com"  # TODO: replace with your real docs subdomain once the name/domain is settled
+
+# TODO: replace with your actual GitHub org/repo once this is pushed
+repo_url: "https://github.com/bryanwills/office-plan"
+repo_name: "office-plan"
+edit_uri: "edit/main/docs/"
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Formation:
+      - Entity & Name Decision: formation/entity-decision.md
+      - Articles of Organization (KY): formation/articles-of-organization.md
+      - EIN & Business Banking: formation/ein-and-banking.md
+      - Operating Agreement: formation/operating-agreement.md
+  - Finance & Compliance:
+      - Annual Compliance Calendar: finance/annual-compliance.md
+      - Tax Notes — Purchasing & Deductions: finance/tax-notes.md
+  - Infrastructure:
+      - Email & Domain Decision: infrastructure/email-and-domain.md
+      - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
+      - Documentation Tooling Risk: infrastructure/docs-tooling.md
+  - Equipment:
+      - Equipment List: equipment/index.md
+      - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
+  - Founder Resources:
+      - Self-Employment & Disability Resources: resources/disability-entrepreneur-resources.md
