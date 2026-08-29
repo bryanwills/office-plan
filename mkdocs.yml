@@ -68,6 +68,7 @@ nav:
       - Email & Domain Decision: infrastructure/email-and-domain.md
       - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
       - Documentation Tooling Risk: infrastructure/docs-tooling.md
+      - VPS Hermes & Buzz Setup: infrastructure/vps-hermes-buzz-setup.md
   - Equipment:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
