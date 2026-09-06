@@ -1,6 +1,8 @@
 # Equipment List
 
-See [AMD AI Dev/NAS PC Build + Office Network Plan](build-plan.md) for the full parts list, pricing, and network architecture.
+See [AMD AI Dev/NAS PC Build + Office Network Plan](build-plan.md) for the long-term parts list, pricing, and network architecture.
+
+**In hand now (purchased 2026-09-05, first power-on pending):** EVGA RTX 3090 Ti FTW3 Ultra, Corsair RM1000x, Minisforum DEG2 V2 eGPU dock on Thunderbolt 5. That is the local inference box for OpenJarvis until the 870 / office builds exist. Full log: [Local AI eGPU rig](../infrastructure/eGPU/ai-rig-build-log.md). Product this box is for: [OpenJarvis command center](../infrastructure/openjarvis-command-center.md).
 
 ## Purchasing notes
 

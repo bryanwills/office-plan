@@ -69,8 +69,13 @@ nav:
       - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
       - Documentation Tooling Risk: infrastructure/docs-tooling.md
       - VPS Hermes & Buzz Setup: infrastructure/vps-hermes-buzz-setup.md
+      - netcup Docker stacks: infrastructure/stacks/README.md
+      - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
+      - OpenJarvis command center: infrastructure/openjarvis-command-center.md
+      - Local AI eGPU rig: infrastructure/eGPU/ai-rig-build-log.md
   - Equipment:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
+      - eGPU 3090 Ti bridge: infrastructure/eGPU/ai-rig-build-log.md
   - Founder Resources:
       - Self-Employment & Disability Resources: resources/disability-entrepreneur-resources.md

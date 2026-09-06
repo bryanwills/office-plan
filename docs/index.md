@@ -9,9 +9,11 @@ This site is the running record of standing up the LLC — every decision, filin
 
 - **Formation** — the legal entity itself: name decision, KY Articles of Organization, EIN, banking, operating agreement
 - **Finance & Compliance** — annual report / LLET deadlines, and the tax research behind purchasing decisions
-- **Infrastructure** — email/productivity platform, domain, cloud credit programs
-- **Equipment** — the current equipment list and purchasing plan
+- **Infrastructure** — email/domain, netcup stacks, Hermes, Buzz, and the local OpenJarvis command center
+- **Equipment** — office build plan plus the 3090 Ti eGPU bridge that is live-in-progress now
 - **Founder Resources** — state/self-employment resources worth tracking
+
+**Current build focus (2026-09-06):** get the EVGA RTX 3090 Ti eGPU online, then run a local-first OpenJarvis command center on it. Direction and branding constraints: [OpenJarvis command center](infrastructure/openjarvis-command-center.md). Hardware log: [eGPU rig](infrastructure/eGPU/ai-rig-build-log.md).
 
 ## How this site is built
 

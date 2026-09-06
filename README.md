@@ -6,10 +6,12 @@ Working repo for standing up the LLC — formation, compliance, infrastructure, 
 
 ```
 office-plan/
+├── PROJECT_STATE.md         # read first: dated "where we left off"
+├── PROJECT-CONTEXT.md       # standing facts, preferences, portfolio
 ├── docs/                    # MkDocs source — this is what builds into the docs site
 │   ├── formation/           # entity/name decision, KY Articles of Organization, EIN, operating agreement
 │   ├── finance/             # annual compliance calendar, tax research notes
-│   ├── infrastructure/      # email/domain decision, cloud credit programs
+│   ├── infrastructure/      # email/domain, netcup stacks, Hermes, eGPU, OpenJarvis direction
 │   ├── equipment/           # equipment list + the AMD AI Dev/NAS PC build plan
 │   └── resources/           # self-employment / disability entrepreneur resources
 ├── mkdocs.yml                # site config
