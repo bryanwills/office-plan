@@ -1,0 +1,23 @@
+# Netcup-specific override: front the relay with Traefik (already terminating
+# TLS for everything else on this box) instead of Caddy, and stop publishing
+# port 3000 directly to the host — Docker's iptables rules bypass ufw, so an
+# unauthenticated, unencrypted path to the relay was reachable from the public
+# internet at http://<host-ip>:3000 until this was applied. Mirrors the same
+# `ports: !reset []` technique upstream already uses in compose.caddy.yml.
+#
+# Not part of the upstream block/buzz repo — kept here in office-plan and
+# copied alongside deploy/compose/ on netcup, so a future `git pull` in
+# /opt/stacks/buzz doesn't touch or need to preserve it through a merge.
+#
+# Usage (always pass both files together — run.sh doesn't know about this one):
+#   cd /opt/stacks/buzz/deploy/compose
+#   docker compose --env-file .env -f compose.yml -f compose.traefik.yml up -d
+services:
+  relay:
+    ports: !reset []
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
