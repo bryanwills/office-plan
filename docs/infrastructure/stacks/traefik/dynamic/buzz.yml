@@ -1,0 +1,34 @@
+# Static route for Buzz (buzz.bryanwills.dev). Docker provider is disabled
+# on this host — see traefik/docker-compose.yml. Buzz's relay container is
+# joined to the shared `proxy` network via compose.traefik.yml (see
+# ../../buzz/compose.traefik.yml), which also removes its direct host port
+# publish (0.0.0.0:3000 was reachable from the public internet, bypassing
+# ufw via Docker's own iptables rules, until that override was applied).
+http:
+  routers:
+    buzz-http:
+      rule: "Host(`buzz.bryanwills.dev`)"
+      entryPoints:
+        - web
+      middlewares:
+        - buzz-https-redirect
+      service: buzz
+
+    buzz-secure:
+      rule: "Host(`buzz.bryanwills.dev`)"
+      entryPoints:
+        - websecure
+      service: buzz
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    buzz-https-redirect:
+      redirectScheme:
+        scheme: https
+
+  services:
+    buzz:
+      loadBalancer:
+        servers:
+          - url: "http://relay:3000"

@@ -1,0 +1,49 @@
+# Traefik reverse proxy for the netcup VPS (gateway.bryanwills.dev, 152.53.82.233).
+# Adapted from Little Creek's /home/bryanwi09/docker/traefik/docker-compose.yml.
+# Path convention: /opt/stacks/traefik (netcup), not /home/bryanwi09/docker (Little Creek).
+services:
+  traefik:
+    image: traefik:v3.5
+    container_name: traefik
+    restart: unless-stopped
+    # Docker's dynamic provider is intentionally NOT enabled: Docker Engine
+    # 29.x enforces MinAPIVersion 1.40 with no backward-compat shim, and
+    # Traefik's bundled docker/docker client hardcodes API 1.24 and does not
+    # honor DOCKER_API_VERSION (confirmed set-but-ignored on 2026-08-30) —
+    # a known incompatibility, not fixed as of v3.5. Routes are defined
+    # statically via the file provider instead (see ./dynamic/*.yml),
+    # referencing containers by name over the shared `proxy` network.
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.file.directory=/dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@bryanwills.dev"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--log.level=INFO"
+    volumes:
+      - /opt/stacks/traefik/logs:/var/log/traefik
+      - /opt/stacks/traefik/dynamic:/dynamic:ro
+      - /etc/localtime:/etc/localtime
+      - /opt/stacks/traefik/acme.json:/letsencrypt/acme.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      # Dashboard intentionally NOT exposed via a router yet — add a
+      # traefik-secure router + basicauth middleware with a fresh
+      # htpasswd hash (do not reuse the Little Creek one) before exposing
+      # https://traefik.bryanwills.dev publicly.
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

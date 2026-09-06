@@ -1,0 +1,31 @@
+# Static route for Vaultwarden — Traefik's docker provider is disabled on
+# this host (see docker-compose.yml), so routing is defined here instead.
+# `vaultwarden` resolves via Docker DNS on the shared `proxy` network.
+http:
+  routers:
+    vaultwarden-http:
+      rule: "Host(`vault.bryanwills.dev`)"
+      entryPoints:
+        - web
+      middlewares:
+        - vaultwarden-https-redirect
+      service: vaultwarden
+
+    vaultwarden-secure:
+      rule: "Host(`vault.bryanwills.dev`)"
+      entryPoints:
+        - websecure
+      service: vaultwarden
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    vaultwarden-https-redirect:
+      redirectScheme:
+        scheme: https
+
+  services:
+    vaultwarden:
+      loadBalancer:
+        servers:
+          - url: "http://vaultwarden:80"

@@ -1,0 +1,31 @@
+# Static route for bryanwills.dev + bigbraincoding.com (served by the shared
+# nginx container). Docker provider is disabled on this host — see
+# traefik/docker-compose.yml.
+http:
+  routers:
+    nginx-sites-http:
+      rule: "Host(`bryanwills.dev`) || Host(`www.bryanwills.dev`) || Host(`bigbraincoding.com`) || Host(`www.bigbraincoding.com`)"
+      entryPoints:
+        - web
+      middlewares:
+        - nginx-sites-https-redirect
+      service: nginx-sites
+
+    nginx-sites-secure:
+      rule: "Host(`bryanwills.dev`) || Host(`www.bryanwills.dev`) || Host(`bigbraincoding.com`) || Host(`www.bigbraincoding.com`)"
+      entryPoints:
+        - websecure
+      service: nginx-sites
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    nginx-sites-https-redirect:
+      redirectScheme:
+        scheme: https
+
+  services:
+    nginx-sites:
+      loadBalancer:
+        servers:
+          - url: "http://nginx:80"
