@@ -1,0 +1,31 @@
+# Vaultwarden for the netcup VPS. Adapted from Little Creek's
+# /home/bryanwi09/docker/vaultwarden/docker-compose.yml.
+# Path convention: /opt/stacks/vaultwarden (netcup), not /home/bryanwi09/docker (Little Creek).
+# Data (/opt/stacks/vaultwarden) must be rsynced from Little Creek before first start —
+# see docs/infrastructure/stacks/vaultwarden/MIGRATION.md.
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://vault.bryanwills.dev
+      - WEBSOCKET_ENABLED=true
+      - SENDS_ALLOWED=true
+      - PASSWORD_ITERATIONS=500000
+      - ROCKET_PROFILE=release
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=80
+    volumes:
+      - /opt/stacks/vaultwarden/data:/data
+    # No traefik.* labels: Traefik's docker provider is disabled on this
+    # host (Docker Engine 29.x / Traefik client API-version incompatibility
+    # — see traefik/docker-compose.yml). Routing is defined statically in
+    # traefik/dynamic/vaultwarden.yml instead, which reaches this container
+    # by name (`vaultwarden`) over the shared `proxy` network.
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

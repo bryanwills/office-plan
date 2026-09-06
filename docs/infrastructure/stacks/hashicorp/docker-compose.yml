@@ -1,0 +1,26 @@
+# Hashicorp Vault for the netcup VPS. Adapted from Little Creek's
+# /home/bryanwi09/docker/hashicorp/docker-compose.yml. Container was stopped
+# (Exited 4 weeks) on Little Creek at migration time — not actively serving
+# anything, migrated for continuity/data preservation.
+# Real secrets go in ./.env on the server (gitignored) — see .env.example.
+services:
+  vault:
+    image: hashicorp/vault:1.20
+    container_name: vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    env_file:
+      - .env
+    volumes:
+      - ./entrypoint.sh:/entrypoint.sh
+      - ./vault-config.hcl:/vault-config.hcl
+      - /opt/stacks/hashicorp/vault-data:/vault/file
+      - /opt/stacks/hashicorp/vault-logs:/vault/logs
+    entrypoint: ["sh", "/entrypoint.sh"]
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
