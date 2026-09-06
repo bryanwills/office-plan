@@ -1,0 +1,25 @@
+# Secrets and credentials — never commit real values, only .env.example templates
+.env
+*.env
+!*.env.example
+
+# Traefik ACME account key + issued certs
+acme.json
+
+# OS / editor cruft
+.DS_Store
+
+# MkDocs/ProperDocs build output (regenerated, not source)
+site/
+
+# Python bytecode from local script checks
+__pycache__/
+*.pyc
+
+# Local scratch dumps (screenshots, zips, reference PDFs). Keep the
+# folder if useful on disk, but do not publish it from this public repo.
+docs/resources/temp/
+docs/resources/temp.zip
+
+# Promo recordings and other large local media
+media/**
