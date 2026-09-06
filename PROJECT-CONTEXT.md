@@ -4,6 +4,12 @@
 
 **Last compiled:** August 29, 2026, from a chat conversation with Claude (claude.ai), corrected same day after Bryan flagged an inaccuracy. Bryan has emphasized this file needs to stay current — if he tells you something new that changes a plan below, update this file, don't just act on it and move on.
 
+**Update 2026-08-30 (Claude Code, this repo):** See `PROJECT_STATE.md` section 5c for full current migration status — short version: Vaultwarden, Hashicorp Vault, and Nginx (both bryanwills.dev + bigbraincoding.com) are all fully migrated to netcup with DNS cut over and live. Buzz (agentic workspace, `github.com/block/buzz`) was newly deployed at `buzz.bryanwills.dev`; Bryan was mid-onboarding in the desktop app when the session ended. Traefik's Docker provider is disabled on netcup (confirmed Docker Engine 29.x / Traefik client incompatibility) — every stack routes via Traefik's file provider instead; follow that pattern for anything new. The repo was found to be public with no `.gitignore` — one was added; keep all real secrets in server-side `.env` files, never in this repo or in chat output.
+
+**Update 2026-08-30 night (same session, later that evening):** Spent several hours debugging why Hermes Agent's interactive CLI on netcup couldn't reliably use its already-working Gmail MCP connection — found and fixed 4 real bugs (see `docs/infrastructure/hermes-gmail-troubleshooting-2026-08-30.md`), but the core remaining limitation is that small local CPU-only models (8-9B) are genuinely unreliable at agentic tool-calling — confirmed by a warning built into Hermes's own source code, not a config mistake on Bryan's part. **Bryan explicitly does not want to pay for a hosted model** to fix this ("this will be ongoing and it will require a lot of traffic... I do not want to use anything that requires me to pay for it") — respect this constraint in future sessions rather than re-suggesting Anthropic/OpenAI API keys. Separately, successfully ran two one-time deterministic (non-LLM) Gmail cleanup scripts — see `docs/infrastructure/scripts/README.md` — after Bryan's original ask (an unattended overnight LLM cron job) was talked down given the demonstrated reliability issues that same session.
+
+**Update 2026-09-06 (Cursor, this repo):** The hosted-model constraint above still stands. The hardware path to fix the CPU tool-calling failure is now in the house: EVGA RTX 3090 Ti FTW3 Ultra (24 GB) + Corsair RM1000x + Minisforum DEG2 V2 eGPU dock on Thunderbolt 5, purchased 2026-09-05. First power-on is not done yet. Full inventory and safety gate: `docs/infrastructure/eGPU/ai-rig-build-log.md`. Bryan forked Stanford OpenJarvis to `github.com/bryanwills/OpenJarvis` (local `/Users/bryanwills/code/ai/OpenJarvis`) and is building a local-first command center between that stack and the walk-in / spoken-brief / wall-HUD loop shown on [jarvis-agent.tech](https://jarvis-agent.tech/), without Marvel branding, without their agent names, and without a "Daddy's Home" / "Good evening, sir" greeting. Daily voice should feel like Claude conversation mode. Dashboards must cover the ND assistant, the paper-trading bot, and the rest of the portfolio across a real multi-monitor desk (that many screens is intentional). He is also making more local neurodivergent-community contacts; the system has to help his life first so it can be a honest demo for that community. Standing brief: `docs/infrastructure/openjarvis-command-center.md`. Hermes on netcup stays the existing 24/7 gateway until an explicit integration decision. Do not drop OpenJarvis source into this public docs repo.
+
 ---
 
 ## Resolved (previously open questions, confirmed by Bryan Aug 29 2026)
@@ -94,7 +100,15 @@ When an AI agent (any model, not specific to one) drifts from or contradicts som
 ## AI Projects Portfolio
 
 ### OpenJarvis (aliases: Neurodivergent Jarvis, picoclaw, tinyclaw, nanoclaw)
-Executive-function AI assistant for neurodivergent people — "Pepper Potts" framing, proactive/anticipatory support rather than reactive. Hermes Agent is the preferred 24/7 gateway (NOT OpenClaw — that was configured once early on and never used further, despite what any other note might imply). Related real-world problem Bryan wants to solve: no easy way for a working professional's therapist to relay session data to a psychiatrist for medication management outside specific clinical settings; exploring AI-assisted session summary generation (HIPAA-compliant) as a therapist↔psychiatrist communication bridge, and sees a business opportunity there. Reference paper: arxiv.org/abs/2605.17172. Local repo path likely under `/Users/bryanwills/code/bbc/neuro`.
+Executive-function AI assistant for neurodivergent people. Proactive / anticipatory support, not a reactive chatbot. **Do not use Pepper Potts, Tony Stark, or Marvel framing in product copy or voice.** Candidate consumer brand remains "Neuro Inclusion AI" (`neuroinclusiveai.com`), kept separate from the OpenJarvis stack name.
+
+**Repos (as of 2026-09-06):** working fork `github.com/bryanwills/OpenJarvis` from `github.com/open-jarvis/OpenJarvis`. Local checkout: `/Users/bryanwills/code/ai/OpenJarvis`. Older experiments (do not merge without review): `/Users/bryanwills/code/jarvisai`. Neuro-prefixed path `/Users/bryanwills/code/bbc/neuro` may still exist; prefer the fork above for new work.
+
+**Product shape:** local-first command center between Stanford OpenJarvis (on-device agents, skills, morning digest) and the operational loop on [jarvis-agent.tech](https://jarvis-agent.tech/) (walk-in, spoken brief, wall HUD, specialist agents overnight). Bryan wants conversation-mode voice, a real multi-monitor desk (wall HUD + several desk screens), and live views of the ND assistant, the paper-trading bot, infra, and content. Overnight drafts are fine. Approvals stay gated. Full brief: `docs/infrastructure/openjarvis-command-center.md`.
+
+Hermes Agent remains the preferred **existing** 24/7 gateway on netcup (NOT OpenClaw). How Hermes and OpenJarvis share memory / voice / channels is an open architecture question. Do not silently retire Hermes.
+
+Related market idea, later and separate: HIPAA-compliant therapist↔psychiatrist session-summary relay. Reference paper: arxiv.org/abs/2605.17172.
 
 ### Open Brain
 Personal "second brain" LLM system, Ollama + Supabase backend. Initial Supabase config (thoughts, memory retention, passwords) completed Aug 19, 2026. Slated as the first workload to stand up on the new netcup VPS after migration.
@@ -139,6 +153,7 @@ AI-assisted day trading using IBKR paper trading API first (hard rule: paper tra
 - Documented in a git-versioned docs repo at `github.com/bryanwills/office-plans`, using ProperDocs (see Resolved section above)
 
 ### Near-term "bridge" machines (while waiting on the 870/office builds)
+- **eGPU local AI rig (purchased 2026-09-05, first power-on pending):** EVGA RTX 3090 Ti FTW3 Ultra 24 GB + Corsair RM1000x + Minisforum DEG2 V2 on Thunderbolt 5 into the current MacBook Pro. This is the active local-inference path for OpenJarvis and for fixing Hermes-class tool-calling without a hosted-model bill. Details: `docs/infrastructure/eGPU/ai-rig-build-log.md`.
 - **Mac Mini M4 Pro** — decided purchase as the immediate headless AI machine, plus a TB4-to-10G adapter, a TB4 NVMe SSD, and a TB5-to-10G adapter for transfer speed testing against the current MacBook Pro
 - **New MacBook Pro** — mentioned as a want (current one has display issues, charger was forgotten at least once during the Tailscale incident), no confirmed spec/purchase yet
 - **Mac Studio M5 Ultra (256GB)** — planning to lease around its 9/22/2026 preorder release; explicitly wants an income-generating plan lined up to help offset the cost
@@ -159,7 +174,9 @@ AI-assisted day trading using IBKR paper trading API first (hard rule: paper tra
 - `/Users/bryanwills/code/llc/office-plan` — this file lives here
 - `/Users/bryanwills/code/llc` — LLC formation work generally
 - `/Users/bryanwills/code/bbc/MealForge` — Meal Forge app
-- `/Users/bryanwills/code/bbc/neuro` — likely OpenJarvis/Neuro Inclusion AI related
+- `/Users/bryanwills/code/ai/OpenJarvis` — working OpenJarvis fork (prefer this)
+- `/Users/bryanwills/code/jarvisai` — older jarvisAI experiments, do not merge blindly
+- `/Users/bryanwills/code/bbc/neuro` — possible leftover Neuro Inclusion AI path; confirm before using
 - `/Users/bryanwills/code/ai/translation_app` — LinguaBridge
 - `/Users/bryanwills/code/bigbraincoding` — bigbraincoding.com stack
 - `/Users/bryanwills/vps` — VPS/migration related work
@@ -170,6 +187,7 @@ AI-assisted day trading using IBKR paper trading API first (hard rule: paper tra
 - `github.com/bryanwills/dotfiles` — dotfiles, tracked via Git in `~/.config/`, chezmoi in no-Git mode (`sourceDir = ~/.config/chezmoi`, deliberately NOT git-initialized to avoid a submodule conflict with the parent `~/.config` repo)
 - `github.com/bryanwills/docker` — Little Creek's Docker stack backup
 - `github.com/bryanwills/office-plans` — docs repo for the Bullitt County office buildout, on ProperDocs
+- `github.com/bryanwills/OpenJarvis` — fork of Stanford OpenJarvis; runtime code for the local command center
 - `github.com/bryanwills/obsidian-bryans-journal` — private repo, Obsidian vault, daily journal + dated life-events notes + a `Work-Notes.md` documenting workplace incidents
 - Claude Code CLI already set up on infrapoc and WSL2 via a private `claude-config` repo (GitHub Enterprise), symlinked into `~/.claude/`, with a seeded CLAUDE.md and two custom skills (`infra-remediation`, `nvim-dotfiles-context`). Being installed fresh on the MacBook Pro now specifically to drive the SSH setup and Little Creek → netcup migration directly.
 - Beads (`gastownhall/beads`, Dolt-backed) identified as a candidate for structured cross-machine task memory, not yet implemented.

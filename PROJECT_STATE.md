@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-08-25 (Claude, claude.ai chat, at Bryan's request)
+Last updated: 2026-09-06 (Cursor, this repo — indexed after git pull; 3090 Ti eGPU + OpenJarvis command-center direction recorded)
 
 ---
 
@@ -31,7 +31,7 @@ Last updated: 2026-08-25 (Claude, claude.ai chat, at Bryan's request)
 
 | Project | What it is | Status |
 |---|---|---|
-| **OpenJarvis** (aka Neurodivergent Jarvis, picoclaw/tinyclaw/nanoclaw) | AI executive-function assistant for neurodivergent people — proactive/anticipatory "Pepper Potts" framing. Also exploring a HIPAA-compliant therapist↔psychiatrist communication tool (session summary relay) as a related market opportunity | Architecture/staging phase |
+| **OpenJarvis** (aka Neurodivergent Jarvis, picoclaw/tinyclaw/nanoclaw) | Local-first ND executive-function command center. Fork: `github.com/bryanwills/OpenJarvis`. Sits between Stanford OpenJarvis and the walk-in / spoken-brief / wall-HUD loop on jarvis-agent.tech, **without** Marvel branding or their agent names. Voice like Claude conversation mode. Dashboards: ND app, paper trading, infra, content. HIPAA therapist↔psychiatrist summary idea is a later, separate track. Brief: `docs/infrastructure/openjarvis-command-center.md` | Forked 2026-09-06; waiting on 3090 Ti first power-on |
 | **MealForge** | Recipe-to-grocery-list app: select/scale recipes, consolidate ingredients, order via Kroger/Walmart. Spoonacular for recipe data, Kroger has a real dev API, Walmart does not (seller-only) | Prototype built (React), DB schema design in progress (unit measurement variability: pinch/tsp/tbsp/cup, quantity, ingredient, substitutions) |
 | **LinguaBridge** | Live AI-translated video call app. pnpm monorepo, Next.js 16, TypeScript, Tailwind v4, Supabase, LiveKit, `TranslationProvider` abstraction | Scaffolded, delivered as zip w/ git history |
 | **Day trading bot** | AI-assisted day trading, IBKR paper trading first (30-45 days min data before real money), multi-factor quant signals (news, geopolitics, Polymarket/Kalshi sentiment). Hard rule: paper only, human approval gate, no auto-execution until validated | Accounts open (Alpaca + IBKR), strategy design phase |
@@ -81,7 +81,15 @@ Last updated: 2026-08-25 (Claude, claude.ai chat, at Bryan's request)
 - AI inference server: AMD Ryzen AI Max 128GB Strix Halo box
 - AI dev workstation/NAS: custom AMD X870E Glacial build — Ryzen 9 9950X3D, Radeon AI PRO R9700 32GB, 128GB RAM expandable to 256GB, tiered NVMe (2x Gen5 1TB RAID1 boot, 2x Gen4 4TB RAID1 active, 2x Gen4 1TB scratch) + 4x enterprise HDD RAIDZ2 archive
 - OPNsense routing, two-switch aggregation, bonded 40G DAC uplinks
+- Desk: multi-monitor command center is intentional (wall HUD + several desk screens), not a later nice-to-have
 - Interim plan: Mac Mini M4 Pro 48GB (headless AI server) + TB4 NVMe SSD + TB4/TB5-to-10G adapters, until the custom build is complete
+
+### 5a-now. eGPU bridge (purchased 2026-09-05, first power-on pending)
+- EVGA GeForce RTX 3090 Ti FTW3 Ultra 24 GB (Ti = 12V-2x6, not dual 8-pin)
+- Corsair RM1000x 1000 W + matching Corsair 12V-2x6 Type 4 cable
+- Minisforum DEG2 V2 dock, Thunderbolt 5 into the current MacBook Pro
+- Models on `/Volumes/OllamaDrive`
+- This is how local agents get a GPU without a hosted-model bill. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
 
 ### 5b. Domains
 | Domain | Registrar | Status |
@@ -91,9 +99,20 @@ Last updated: 2026-08-25 (Claude, claude.ai chat, at Bryan's request)
 | bigbraincoding.com | Namecheap, expires 2027-06-16 | Active |
 | bryanwills.xyz/.io/.net/.tech | — | Previously owned, expired |
 
-### 5c. VPS migration: Little Creek → netcup (ACTIVE, this is today's priority)
+### 5c. VPS migration: Little Creek → netcup
 
-**Old (being retired):** Little Creek Hosting, 38.45.65.66, 16 cores/32GB/320GB NVMe, ~$14/mo. Currently having OS/boot issues. Bitwarden browser extension broken (root cause: DNS/cert path, not Vaultwarden itself — `vault.bryanwills.dev` works fine via direct browser access, only the extension's connection is affected).
+**Status as of 2026-08-30 (major progress, see detailed docs at `docs/infrastructure/stacks/<name>/MIGRATION.md` or `SETUP.md` per stack):**
+
+- **Vaultwarden** — fully migrated, DNS cut over (`vault.bryanwills.dev` → netcup), real Let's Encrypt cert live, login verified via Chrome extension with Yubikey. **Known open issue:** extension logs in but vault data isn't loading — unresolved, Bryan to revisit.
+- **Hashicorp Vault** — migrated (was already stopped on Little Creek, no live cutover needed), data integrity verified intact (original 5-share/3-threshold init preserved, did NOT re-initialize), DNS cut over (`keys.bryanwills.dev`), cert live. **Still sealed** — Bryan needs to unseal manually with his existing key shares.
+- **Nginx + both websites** (bryanwills.dev, bigbraincoding.com) — fully migrated (data verified byte-identical: 1.7G + 3.3G), DNS cut over for root + www on both domains, one multi-SAN Let's Encrypt cert covering all 4 hostnames, verified live with full TLS chain validation.
+- **Traefik** — running on netcup, but its **Docker provider is disabled**: Docker Engine 29.x enforces `MinAPIVersion 1.40` with no backward-compat shim, and Traefik (tested v3.3 and v3.5) hardcodes/defaults to API 1.24 and does not honor `DOCKER_API_VERSION` — a confirmed incompatibility, not a config mistake. All routing on this host is done via Traefik's **file provider** instead (`/opt/stacks/traefik/dynamic/*.yml`), referencing containers by name over the shared `proxy` Docker network. Apply this same pattern to every future stack on this host.
+- **Buzz** (new build, not a migration) — deployed at `buzz.bryanwills.dev`, relay+Postgres+Redis+MinIO live, fresh owner Nostr identity generated and configured. **Found and fixed a real security gap during setup:** Buzz's default port 3000 was reachable directly from the public internet, bypassing both Traefik's TLS and `ufw` (Docker's iptables rules ignore `ufw` for published ports) — fixed via a netcup-specific `compose.traefik.yml` override (see `docs/infrastructure/stacks/buzz/`). **In progress as of end of session:** Bryan was mid-onboarding in the desktop app (had to fully clear leftover identity state from an old Aug-22 attempt — turned out to be cached in macOS Keychain, not just Application Support, since a plain app uninstall/reinstall didn't clear it). Last screen seen: agent-integration picker (Claude Code / Codex / Goose) — advised Claude Code, matches Bryan's stated tooling preference. **Not yet confirmed working end-to-end** — pick this up next session.
+- **Transfer-method lesson learned:** the first website-data copy attempt piped through `ssh littlecreek | ssh netcup` run locally, which routes data through the local Mac's own connection twice and crawled at ~0.4MB/s. Fixed by a temporary SSH keypair enabling direct netcup→littlecreek `rsync` (~10x faster), removed after. **Reuse the direct-server-to-server pattern for any future large-data stack migration** instead of relaying through the local machine.
+- **Repo hygiene finding:** `office-plan` is a **public** GitHub repo and had no `.gitignore` — added one (excludes `.env`, `acme.json`, `.DS_Store`, `site/`). Real secrets (Vault OAuth creds, Buzz DB/Redis/S3/relay keys, etc.) are kept in `.env` files on the servers only, generated fresh, never committed or printed to chat.
+- **Not yet decided:** timing for decommissioning Little Creek's now-redundant Vaultwarden/Vault/Nginx — don't delete without asking first (matches Bryan's standing "ask before removing" preference).
+
+**Old (being retired):** Little Creek Hosting, 38.45.65.66, 16 cores/32GB/320GB NVMe, ~$14/mo. Currently having OS/boot issues. Bitwarden browser extension broken (root cause: DNS/cert path, not Vaultwarden itself — `vault.bryanwills.dev` works fine via direct browser access, only the extension's connection is affected). **Superseded by DNS cutover above** — extension should reconnect to netcup now, though data-loading issue noted above is still open.
 
 **New (target):** netcup VPS 8000 G12, Manassas VA, 152.53.82.233. 16 vCore KVM, 64GB DDR5 ECC, 2TB NVMe, 10GbE, DDoS protection. €52.82/mo, 0-month billing (no prepay trap). Deployed, being reinstalled to Ubuntu 26.04 UEFI amd64. Joins Tailscale alongside ai-pi, MacBook Pro, bryanwills.dev.
 
@@ -133,19 +152,29 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 
 ---
 
-## 6. Immediate Priorities (as of 2026-08-25)
+## 6. Immediate Priorities (as of 2026-09-06)
 
-1. **Vaultwarden/Bitwarden fix** — get Traefik + Portainer + Vaultwarden live on netcup under `/opt/stacks/`, test via `/etc/hosts` override, then cut DNS (section 5c steps 2-7). This unblocks daily password access, which is the acute pain point right now.
-2. **Full Little Creek → netcup migration** of all remaining stacks, then wipe/rebuild Little Creek as secondary.
-3. **Technical blog stood up on bryanwills.dev**, live and public, documenting the build process — timing motivated by a manager at Arvato independently asking about AI-generated infra training content; Bryan wants a live example ready to point to.
-4. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
-5. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
+1. **eGPU first power-on + local inference on the 3090 Ti** — safety-gate the DEG2 V2 ATX/EPS wiring, short detection test, then a real local model. This unblocks OpenJarvis and the Hermes tool-calling gap without a hosted-model bill. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
+2. **OpenJarvis command-center v0 on that GPU** — morning brief from local sources, conversation-mode voice, HUD + product dashboards. Direction: `docs/infrastructure/openjarvis-command-center.md`. Do not start by cloning Peter Mach's chrome or greetings.
+3. ~~Vaultwarden/Bitwarden fix~~ — **done**, see 5c. One loose end: extension logs in but vault data isn't loading yet — pick up when it hurts.
+4. **Finish Buzz onboarding** — Bryan was mid-setup in the desktop app (identity import resolved via Keychain wipe; last screen was the agent-integration picker, Claude Code recommended). Confirm it actually completes and the workspace loads. Still open as of 2026-08-30 night.
+5. **Hashicorp Vault unseal** — migrated and data-verified, just needs Bryan to run `vault operator unseal` with his existing key shares when he's ready to use it.
+6. ~~Hermes Agent + Gmail MCP reliability on netcup~~ — **substantially debugged**, see `docs/infrastructure/hermes-gmail-troubleshooting-2026-08-30.md`. Four real bugs found and fixed. Core finding still true on CPU: 8-9B local models are unreliable at tool-calling. GPU path above is the intended fix. Do not suggest Anthropic/OpenAI API keys.
+7. ~~Gmail inbox backlog cleanup~~ — **done**, two deterministic (non-LLM) scripts: 2,037 Honey/SlickDeals emails trashed, 188 GitHub notifications marked read. See `docs/infrastructure/scripts/README.md`.
+8. Little Creek decommission timing for Vaultwarden/Vault/Nginx — not yet decided, ask before deleting anything there.
+9. **Technical blog stood up on bryanwills.dev** — not started. Still wanted as a live ND-entrepreneurship / infra-training example. Sequence: GPU working, then a brief that is real, then write about it.
+10. **Ghost / documentation-as-code site** — also not started; Bryan chose Buzz first among the three "new builds" on 2026-08-30.
+11. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
+12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
+13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
 
 ---
 
 ## 7. Open Decisions (do not assume these are settled)
 
 - LLC legal name — unresolved, many names rejected
+- How Hermes (netcup 24/7 gateway) and the OpenJarvis fork share memory, voice, and channels. Do not silently retire Hermes.
+- Mini-PC after the eGPU bridge (MS-01 vs MS-02) — still open
 - Whether Norcross Consulting services are still needed
 - Exact scope/timeline for the "someone else handles the deferment call" plan
 - Server EOL audit toolkit, homepage dashboard recurring blank-grid issue, WSL2 environment — tracked in their own areas, not detailed here to keep this file lean
