@@ -77,5 +77,7 @@ nav:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
       - eGPU 3090 Ti bridge: infrastructure/eGPU/ai-rig-build-log.md
+  - Trading Bot:
+      - ApexAlgo Evaluation & Architecture Plan: trading/apexalgo-evaluation.md
   - Founder Resources:
       - Self-Employment & Disability Resources: resources/disability-entrepreneur-resources.md

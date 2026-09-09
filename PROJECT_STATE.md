@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-06 (Cursor, this repo — indexed after git pull; 3090 Ti eGPU + OpenJarvis command-center direction recorded)
+Last updated: 2026-09-07 (Claude Code, this repo — ApexAlgo trading-bot repo studied and architecture plan written; MS-01 "NUC" purchase confirmed, delivery pending)
 
 ---
 
@@ -34,7 +34,7 @@ Last updated: 2026-09-06 (Cursor, this repo — indexed after git pull; 3090 Ti 
 | **OpenJarvis** (aka Neurodivergent Jarvis, picoclaw/tinyclaw/nanoclaw) | Local-first ND executive-function command center. Fork: `github.com/bryanwills/OpenJarvis`. Sits between Stanford OpenJarvis and the walk-in / spoken-brief / wall-HUD loop on jarvis-agent.tech, **without** Marvel branding or their agent names. Voice like Claude conversation mode. Dashboards: ND app, paper trading, infra, content. HIPAA therapist↔psychiatrist summary idea is a later, separate track. Brief: `docs/infrastructure/openjarvis-command-center.md` | Forked 2026-09-06; waiting on 3090 Ti first power-on |
 | **MealForge** | Recipe-to-grocery-list app: select/scale recipes, consolidate ingredients, order via Kroger/Walmart. Spoonacular for recipe data, Kroger has a real dev API, Walmart does not (seller-only) | Prototype built (React), DB schema design in progress (unit measurement variability: pinch/tsp/tbsp/cup, quantity, ingredient, substitutions) |
 | **LinguaBridge** | Live AI-translated video call app. pnpm monorepo, Next.js 16, TypeScript, Tailwind v4, Supabase, LiveKit, `TranslationProvider` abstraction | Scaffolded, delivered as zip w/ git history |
-| **Day trading bot** | AI-assisted day trading, IBKR paper trading first (30-45 days min data before real money), multi-factor quant signals (news, geopolitics, Polymarket/Kalshi sentiment). Hard rule: paper only, human approval gate, no auto-execution until validated | Accounts open (Alpaca + IBKR), strategy design phase |
+| **Day trading bot** | Multi-asset (equities/options via IBKR + Alpaca, crypto via Coinbase/CCXT, prediction markets via Kalshi/Polymarket) AI-assisted trading, paper first (30-45 days min data before real money). Two signal patterns: (1) periodic multi-factor scoring (news, geopolitics, prediction-market sentiment) via a local LLM signal service (Qwen3.8:27B), advisory only; (2) verified-news-catalyst momentum pattern (fast-moving event → multi-source credibility check → sized entry → tiered exit), still approval-gated, not autonomous. Architecture plan (ApexAlgo evaluated as reference, not reused — no OSS license, crypto/CCXT-only on its own so no IBKR/Alpaca support; CCXT itself, MIT-licensed, is reused directly for the Coinbase leg): `docs/trading/apexalgo-evaluation.md`. Explicitly **out of scope**: Schwab DCA holdings (do not touch), Roth IRA (unfunded, not for active trading), Tangem cold wallet (manual only, never automated). Hard rule: paper only, human approval gate, no auto-execution until validated | Alpaca + IBKR + Coinbase + Kalshi + Polymarket accounts open; architecture plan updated 2026-09-07 with full asset scope; **freqtrade fork should be retired** — crypto-only mismatch against the equities brokers, though its CCXT dependency is being reused for Coinbase specifically |
 | **Buzz Agents** | Agentic AI coordination platform (Nostr-based, Block/Jack Dorsey's company). Correct architecture: ONE self-hosted Buzz instance with per-project channels (OpenJarvis, MealForge, LinguaBridge, trading bot, Open Brain), not separate deployments per project | Planned, not yet deployed |
 | **Open Brain / Second Brain / LLM wiki** | Personal knowledge ingestion pipeline — Ollama + Supabase, "second-me" LLM wiki concept, feeds from the reading-pipeline (browser tab/article summarizer) | Planned |
 | **Drone services business** | Separate planned side business | Domain naming / pre-launch practice stage |
@@ -84,11 +84,15 @@ Last updated: 2026-09-06 (Cursor, this repo — indexed after git pull; 3090 Ti 
 - Desk: multi-monitor command center is intentional (wall HUD + several desk screens), not a later nice-to-have
 - Interim plan: Mac Mini M4 Pro 48GB (headless AI server) + TB4 NVMe SSD + TB4/TB5-to-10G adapters, until the custom build is complete
 
-### 5a-now. eGPU bridge (purchased 2026-09-05, first power-on pending)
+### 5a-now. eGPU bridge + "NUC" (as of 2026-09-07 — supersedes prior PSU/target-host detail below)
+- **Minisforum MS-01** ("the NUC") — i9-13900H, 64GB RAM, 1TB SSD, will run Ubuntu 24.04 LTS. Purchased, delivery expected 2026-09-07 (today). This is the mini-PC decision that was previously open (`PROJECT_STATE.md` §7 used to list "Mini-PC after eGPU bridge, MS-01 vs MS-02 — still open"; **now resolved: MS-01**).
 - EVGA GeForce RTX 3090 Ti FTW3 Ultra 24 GB (Ti = 12V-2x6, not dual 8-pin)
-- Corsair RM1000x 1000 W + matching Corsair 12V-2x6 Type 4 cable
-- Minisforum DEG2 V2 dock, Thunderbolt 5 into the current MacBook Pro
-- Models on `/Volumes/OllamaDrive`
+- **Corsair RX1000 PSU** + Corsair Type 4 special power adapter for the 3090 Ti (correction — prior note said RM1000x; RX1000 is correct per Bryan 2026-09-07)
+- Minisforum DEGv2 eGPU dock, connects via **Thunderbolt 5** — target host is now the **MS-01**, not the MacBook Pro (prior note said MacBook Pro; superseded)
+- **Nothing powered on yet as of 2026-09-07** — still pending the MS-01 arriving and the safety-gate/short-detection step in `docs/infrastructure/eGPU/ai-rig-build-log.md`
+- Models on `/Volumes/OllamaDrive` (currently attached to the MacBook Pro; will move to the MS-01 once it's set up)
+- Target model: Qwen3.8:27B via Ollama — used for OpenJarvis/Hermes tool-calling AND as the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`), same GPU serves both
+- Planned dual-use: this rig will be physically transported between home and work once operational, for local-AI work on a separate work-owned homebrew app — that work is out of scope for this repo (public, personal/LLC docs only) and will not be documented here
 - This is how local agents get a GPU without a hosted-model bill. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
 
 ### 5b. Domains
@@ -152,9 +156,10 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 
 ---
 
-## 6. Immediate Priorities (as of 2026-09-06)
+## 6. Immediate Priorities (as of 2026-09-07)
 
-1. **eGPU first power-on + local inference on the 3090 Ti** — safety-gate the DEG2 V2 ATX/EPS wiring, short detection test, then a real local model. This unblocks OpenJarvis and the Hermes tool-calling gap without a hosted-model bill. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
+1. **MS-01 arrival + eGPU first power-on** — MS-01 delivery expected 2026-09-07; once it's in hand, safety-gate the DEGv2 ATX/EPS wiring, short detection test, then a real local model (Qwen3.8:27B via Ollama). This unblocks OpenJarvis, the Hermes tool-calling gap, AND the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`) — one GPU serves all three. Nothing powered on yet. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
+1a. **Trading bot: retire the freqtrade fork, start the Alpaca-adapter backend skeleton** — see `docs/trading/apexalgo-evaluation.md` for the full plan. ApexAlgo studied and rejected as a direct base (crypto/CCXT-only, no OSS license) but its architecture patterns (async engine, node-graph evaluator, risk nodes, event-driven bot console) are worth reimplementing clean-room against Alpaca first, then IBKR.
 2. **OpenJarvis command-center v0 on that GPU** — morning brief from local sources, conversation-mode voice, HUD + product dashboards. Direction: `docs/infrastructure/openjarvis-command-center.md`. Do not start by cloning Peter Mach's chrome or greetings.
 3. ~~Vaultwarden/Bitwarden fix~~ — **done**, see 5c. One loose end: extension logs in but vault data isn't loading yet — pick up when it hurts.
 4. **Finish Buzz onboarding** — Bryan was mid-setup in the desktop app (identity import resolved via Keychain wipe; last screen was the agent-integration picker, Claude Code recommended). Confirm it actually completes and the workspace loads. Still open as of 2026-08-30 night.
@@ -174,7 +179,8 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 
 - LLC legal name — unresolved, many names rejected
 - How Hermes (netcup 24/7 gateway) and the OpenJarvis fork share memory, voice, and channels. Do not silently retire Hermes.
-- Mini-PC after the eGPU bridge (MS-01 vs MS-02) — still open
+- ~~Mini-PC after the eGPU bridge (MS-01 vs MS-02)~~ — **resolved 2026-09-07: MS-01** purchased, delivery pending
+- Trading bot repo name/location (replacing the freqtrade fork), and where IB Gateway/TWS runs long-term given the NUC will physically travel between home and work — see `docs/trading/apexalgo-evaluation.md` §6
 - Whether Norcross Consulting services are still needed
 - Exact scope/timeline for the "someone else handles the deferment call" plan
 - Server EOL audit toolkit, homepage dashboard recurring blank-grid issue, WSL2 environment — tracked in their own areas, not detailed here to keep this file lean
