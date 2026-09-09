@@ -73,6 +73,7 @@ nav:
       - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
       - OpenJarvis command center: infrastructure/openjarvis-command-center.md
       - Local AI eGPU rig: infrastructure/eGPU/ai-rig-build-log.md
+      - Claude Code on Ubuntu setup: infrastructure/claude-code-ubuntu-setup.md
   - Equipment:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md

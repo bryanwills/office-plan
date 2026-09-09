@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-07 (Claude Code, this repo — ApexAlgo trading-bot repo studied and architecture plan written; MS-01 "NUC" purchase confirmed, delivery pending)
+Last updated: 2026-09-08 (Claude Code, this repo — added Claude Code on Ubuntu setup guide for the MS-01 local-AI/Ollama machine)
 
 ---
 
