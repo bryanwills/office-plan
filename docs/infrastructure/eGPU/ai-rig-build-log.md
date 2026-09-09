@@ -205,3 +205,80 @@ this public docs repo.
 ---
 
 *Log maintained as part of the office build-out documentation set.*
+
+---
+
+## 8. Resolution — 2026-09-08
+
+### Status: ✅ GPU OPERATIONAL
+
+The RTX 3090 Ti is now fully functional over Thunderbolt 5 for local AI inference. See the complete troubleshooting documentation: [`thunderbolt-egpu-troubleshooting-guide.md`](./thunderbolt-egpu-troubleshooting-guide.md)
+
+### What Was Required
+
+1. **Disabled GSP firmware** — The GPU System Processor firmware is incompatible with Thunderbolt eGPUs on Linux
+2. **Prevented D3cold power state** — The GPU was falling into deep sleep and couldn't wake up
+3. **Created boot-time recovery service** — Automatically recovers from MMIO failures and binds the NVIDIA driver
+
+### Performance Achieved
+
+- **Connection:** Thunderbolt 4/5 at 40 Gb/s (2 lanes × 20 Gb/s)
+- **Driver:** NVIDIA 580.173.02 with CUDA 13.0
+- **Test result:** llama3.2:3b at 257 tok/s evaluation speed
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `/etc/modprobe.d/nvidia-egpu.conf` | Disables GSP, dynamic power management, ReBAR |
+| `/etc/udev/rules.d/99-egpu-power.rules` | Keeps GPU and TB bridges out of D3cold |
+| `/usr/local/sbin/egpu-bind.sh` | Boot-time GPU binding with MMIO recovery |
+| `/etc/systemd/system/egpu-bind.service` | Systemd service for reliable GPU init |
+
+### Kernel Parameters Added
+
+```
+pcie_aspm=off pcie_port_pm=off pcie_ports=native intel_iommu=on iommu=pt 
+pci=realloc,assign-busses thunderbolt.clx=0 thunderbolt.host_reset=0
+```
+
+### Next Steps
+
+1. ☐ Mount OllamaDrive and configure Ollama to use external storage
+2. ☐ Pull Qwen3.8:27b model
+3. ☐ Run Thunderbolt benchmark with production model
+4. ☐ Install OCuLink adapter (arriving tomorrow)
+5. ☐ Run OCuLink benchmark for comparison
+6. ☐ Document performance difference for content creation
+
+---
+
+## 9. Benchmark Results
+
+*Section to be populated after running benchmarks with both Thunderbolt and OCuLink connections.*
+
+| Connection | Model | Eval Rate (tok/s) | Total Duration | Date |
+|------------|-------|-------------------|----------------|------|
+| Thunderbolt | llama3.2:3b | 257 | — | 2026-09-08 |
+| Thunderbolt | qwen3.8:27b | TBD | TBD | TBD |
+| OCuLink | llama3.2:3b | TBD | TBD | TBD |
+| OCuLink | qwen3.8:27b | TBD | TBD | TBD |
+
+### Benchmark Scripts
+
+- `/home/bryanwills/benchmark-egpu.sh` — Run individual benchmarks
+- `/home/bryanwills/compare-benchmarks.sh` — Compare all results
+
+Usage:
+```bash
+# Thunderbolt benchmark
+./benchmark-egpu.sh llama3.2:3b thunderbolt
+./benchmark-egpu.sh qwen3.8:27b thunderbolt
+
+# After switching to OCuLink
+./benchmark-egpu.sh llama3.2:3b oculink
+./benchmark-egpu.sh qwen3.8:27b oculink
+
+# Compare all
+./compare-benchmarks.sh
+```
