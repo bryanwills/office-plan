@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-08 (Claude Code, this repo — added Claude Code on Ubuntu setup guide for the MS-01 local-AI/Ollama machine)
+Last updated: 2026-09-12 (Claude Code on the MacBook Pro, this repo — AI-NUC SMB mount + local RAG ingest pipeline, see §4f. Bryan is moving over to the AI-NUC next to configure a Honcho container, Gmail MCP, and continue Buzz — see §4f's handoff note for exactly what is and isn't done.)
 
 ---
 
@@ -72,6 +72,57 @@ Last updated: 2026-09-08 (Claude Code, this repo — added Claude Code on Ubuntu
 - Private `claude-config` repo on GitHub Enterprise, symlinked into `~/.claude/`
 - Two custom skills: `infra-remediation`, `nvim-dotfiles-context`
 - Beads (`gastownhall/beads`, Dolt-backed) identified as a candidate for structured cross-machine task memory — worth revisiting for this same continuity problem
+
+### 4f. AI-NUC file transfer + local RAG ingest (done 2026-09-12) — read this before touching the NUC's Samba/embedding setup
+
+**Full technical detail, install steps, verification, and troubleshooting:
+`docs/infrastructure/ai-nuc-smb-mount.md`. This entry is the pointer + the
+handoff state; that doc is the source of truth, don't duplicate it here.**
+
+- **What's live:** the AI-NUC's `~/ingest` (drop folder) and `~/office-plan`
+  (working tree, inspection only) are mounted on the MacBook Pro at
+  `~/AI-NUC/<share>` via SMB over Tailscale, auto-mounting at login and
+  self-healing every 5 min. Anything dropped into `~/AI-NUC/ai-nuc-ingest/inbox/`
+  is picked up by a NUC-side `systemd --user` watcher, logged to a JSONL
+  manifest, and — as of this session — **actually embedded** (nomic-embed-text
+  via Ollama into a local `sqlite-vec` store at `~/ai/embeddings.sqlite3` on
+  the NUC) so it's semantically searchable with
+  `~/ai/venv/bin/python ~/ai/scripts/embed-query.py "question"`. Verified
+  end-to-end multiple times this session.
+- **SSHFS was evaluated and rejected** (Mac's sshfs binary is Intel-only on
+  this arm64 machine; macFUSE has no loaded kext and would need Recovery
+  mode + Reduced Security + reboot with no maintained Apple Silicon story).
+  Don't suggest reviving it.
+- **The `office-plan` repo is explicitly NOT synced over this mount.** Both
+  machines have independent git clones of the same GitHub origin; git is the
+  sync channel. The `ai-nuc-office-plan` share is for inspection/one-off
+  drops only — do not build a workflow that edits the same repo file from
+  both sides over SMB.
+- **Three real bugs were found and fixed during setup (all documented in the
+  doc's troubleshooting table, root cause included):** Samba silently not
+  listening on the Tailscale interface despite reporting "active" (interface-
+  scoped binding doesn't work against Tailscale's point-to-point `/32`s —
+  fixed by binding `0.0.0.0` and enforcing access via `hosts allow`/`deny`
+  instead); Finder's `NetAuthAgent` mount path hanging indefinitely instead of
+  reading the Keychain (fixed by mounting via `mount_smbfs` directly, under
+  `~/AI-NUC/<share>` since `/Volumes` needs root); and an inotify/argv pair of
+  bugs that silently double-embedded every file and made every file report
+  "no extractable text" (both fixed, both verified).
+- **Local `sqlite-vec` was chosen over Open WebUI's built-in knowledge
+  collection deliberately** — it's the same shape of pipeline the §3
+  "Open Brain / Second Brain" entry already plans (Ollama + Supabase,
+  currently *Planned*), just pointed at a lighter store for now. Treat this
+  as that project's working seed, not one-off convenience.
+
+**Handoff — what is NOT done, so the next agent doesn't assume otherwise:**
+Bryan is moving over to work from the AI-NUC directly next, to configure:
+a **Honcho container** (no further detail given this session — don't assume
+what this is, ask him), the **Gmail MCP** (Hermes already runs one per §4b —
+unclear yet if this is that same integration or new work; ask rather than
+assume), and continuing **Buzz** (`buzz.bryanwills.dev` — already deployed on
+netcup per §5c, mid-onboarding per §6 item 4; unclear if "continue Buzz" here
+means resuming that same onboarding from the NUC or something new — ask).
+None of these three were started in this session. Don't report them as done.
 
 ---
 
@@ -162,9 +213,9 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 1a. **Trading bot: retire the freqtrade fork, start the Alpaca-adapter backend skeleton** — see `docs/trading/apexalgo-evaluation.md` for the full plan. ApexAlgo studied and rejected as a direct base (crypto/CCXT-only, no OSS license) but its architecture patterns (async engine, node-graph evaluator, risk nodes, event-driven bot console) are worth reimplementing clean-room against Alpaca first, then IBKR.
 2. **OpenJarvis command-center v0 on that GPU** — morning brief from local sources, conversation-mode voice, HUD + product dashboards. Direction: `docs/infrastructure/openjarvis-command-center.md`. Do not start by cloning Peter Mach's chrome or greetings.
 3. ~~Vaultwarden/Bitwarden fix~~ — **done**, see 5c. One loose end: extension logs in but vault data isn't loading yet — pick up when it hurts.
-4. **Finish Buzz onboarding** — Bryan was mid-setup in the desktop app (identity import resolved via Keychain wipe; last screen was the agent-integration picker, Claude Code recommended). Confirm it actually completes and the workspace loads. Still open as of 2026-08-30 night.
+4. **Finish Buzz onboarding** — Bryan was mid-setup in the desktop app (identity import resolved via Keychain wipe; last screen was the agent-integration picker, Claude Code recommended). Confirm it actually completes and the workspace loads. Still open as of 2026-08-30 night. **As of 2026-09-12, Bryan is moving to work from the AI-NUC and mentioned continuing Buzz there** — unclear if that means resuming this same onboarding from the new machine or separate work; ask rather than assume, see §4f.
 5. **Hashicorp Vault unseal** — migrated and data-verified, just needs Bryan to run `vault operator unseal` with his existing key shares when he's ready to use it.
-6. ~~Hermes Agent + Gmail MCP reliability on netcup~~ — **substantially debugged**, see `docs/infrastructure/hermes-gmail-troubleshooting-2026-08-30.md`. Four real bugs found and fixed. Core finding still true on CPU: 8-9B local models are unreliable at tool-calling. GPU path above is the intended fix. Do not suggest Anthropic/OpenAI API keys.
+6. ~~Hermes Agent + Gmail MCP reliability on netcup~~ — **substantially debugged**, see `docs/infrastructure/hermes-gmail-troubleshooting-2026-08-30.md`. Four real bugs found and fixed. Core finding still true on CPU: 8-9B local models are unreliable at tool-calling. GPU path above is the intended fix. Do not suggest Anthropic/OpenAI API keys. **As of 2026-09-12, Bryan mentioned setting up "the gmail mcp" on/from the AI-NUC** — unclear if this is the same Hermes-hosted integration above or new/separate work; ask rather than assume, see §4f.
 7. ~~Gmail inbox backlog cleanup~~ — **done**, two deterministic (non-LLM) scripts: 2,037 Honey/SlickDeals emails trashed, 188 GitHub notifications marked read. See `docs/infrastructure/scripts/README.md`.
 8. Little Creek decommission timing for Vaultwarden/Vault/Nginx — not yet decided, ask before deleting anything there.
 9. **Technical blog stood up on bryanwills.dev** — not started. Still wanted as a live ND-entrepreneurship / infra-training example. Sequence: GPU working, then a brief that is real, then write about it.
@@ -172,6 +223,8 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 11. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
+14. **Honcho container** — Bryan mentioned (2026-09-12) he's about to configure this, no detail given in that session. Do not assume what it is (a process manager, a specific named project, etc.) — ask him directly when this comes up. See §4f.
+15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---
 
