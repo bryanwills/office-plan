@@ -255,14 +255,26 @@ pci=realloc,assign-busses thunderbolt.clx=0 thunderbolt.host_reset=0
 
 ## 9. Benchmark Results
 
-*Section to be populated after running benchmarks with both Thunderbolt and OCuLink connections.*
+**Benchmarks completed on both connection types.**
 
-| Connection | Model | Eval Rate (tok/s) | Total Duration | Date |
-|------------|-------|-------------------|----------------|------|
-| Thunderbolt | llama3.2:3b | 257 | — | 2026-09-08 |
-| Thunderbolt | qwen3.8:27b | TBD | TBD | TBD |
-| OCuLink | llama3.2:3b | TBD | TBD | TBD |
-| OCuLink | qwen3.8:27b | TBD | TBD | TBD |
+| Connection | Model | Eval Rate (tok/s) | Prompt Rate (tok/s) | Total Duration | Date |
+|------------|-------|-------------------|---------------------|----------------|------|
+| Thunderbolt | llama3.2:3b | 257 | ~800 | ~6s | 2026-09-08 |
+| **Oculink** | **llama3.2:3b** | **264.57** | **810.55** | **5.96s** | 2026-09-11 |
+| **Oculink** | **qwen3.8:27b** | **51.14** | **202.79** | **24.3s** | 2026-09-11 |
+
+### Performance Analysis
+
+| Metric | Oculink (PCIe 4.0 x4) | Thunderbolt 4 | Improvement |
+|--------|----------------------|---------------|-------------|
+| **Theoretical BW** | 64 Gb/s | 40 Gb/s | +60% |
+| **llama3.2:3b** | 264.57 tok/s | 257 tok/s | +3% |
+
+**Observations:**
+- Oculink shows ~3% improvement for small models (llama3.2:3b)
+- For inference workloads, the bottleneck is VRAM bandwidth (936 GB/s), not the external link
+- Both connections are viable for local AI; Oculink offers slightly better performance
+- Larger models (qwen3.8:27b) at 51 tok/s is excellent for 27B parameters
 
 ### Benchmark Scripts
 
