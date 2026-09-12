@@ -1,0 +1,13 @@
+# Hermes-safe alias of qwen3.8:27b
+# Same weights. qwen3.8 renderer rejects tool-loop transcripts
+# that have no plain user message (Ollama #17778 / #18107).
+FROM qwen3.8:27b
+RENDERER qwen3.5
+PARSER qwen3.5
+PARAMETER num_ctx 65536
+PARAMETER temperature 1
+PARAMETER top_k 20
+PARAMETER top_p 0.95
+PARAMETER min_p 0
+PARAMETER repeat_penalty 1
+PARAMETER presence_penalty 0
