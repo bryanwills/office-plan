@@ -1,0 +1,32 @@
+# Open WebUI Stack for ai-nuc
+# Deploy to: /opt/stacks/open-webui/
+# Connects to local Ollama at host.docker.internal:11434
+
+version: '3.8'
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./data:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - WEBUI_AUTH=true
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-changeme}
+      - ENV=prod
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
