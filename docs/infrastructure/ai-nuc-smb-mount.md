@@ -3,9 +3,9 @@
 **Status:** implemented 2026-09-12
 **Scripts:** `scripts/ai-nuc/`, `scripts/macbook/`
 
-Mounts the AI-NUC's ingest folder and `office-plan` working tree as Finder
-volumes on the MacBook Pro, and runs a watcher on the NUC that auto-indexes
-anything dropped into ingest.
+Mounts the AI-NUC's ingest folder and `office-plan` working tree as Finder-
+browsable folders on the MacBook Pro, and runs a watcher on the NUC that
+auto-indexes and semantically embeds anything dropped into ingest.
 
 ---
 
@@ -163,6 +163,20 @@ password, adds scoped `ufw` rules if ufw is active, installs the watcher as a
 `systemd --user` service, and enables lingering so it runs without a login session.
 Idempotent — safe to re-run.
 
+### NUC embedding pipeline (once, no sudo)
+
+```sh
+scp scripts/ai-nuc/embed_lib.py scripts/ai-nuc/embed-file.py scripts/ai-nuc/embed-query.py \
+    scripts/ai-nuc/setup-embeddings.sh ai-nuc:~/nuc-share-setup/
+ssh ai-nuc 'bash ~/nuc-share-setup/setup-embeddings.sh'
+```
+
+Creates the venv, pulls `nomic-embed-text`, installs the three scripts, and
+runs an end-to-end smoke test (embeds a string, checks it comes back as a
+768-dim vector). `index-ingest.sh` picks up the embed step automatically once
+`~/ai/venv/bin/python` and `~/ai/scripts/embed-file.py` both exist — no
+restart needed. Idempotent — safe to re-run after pulling script updates.
+
 ### MacBook Pro (once, no sudo)
 
 ```sh
@@ -185,26 +199,72 @@ hangs waiting on an offline NUC.
    `moved_from`, `delete`, `create`.
 2. Filters SMB/macOS scaffolding — `.DS_Store`, `._*` AppleDouble files,
    `.smbdelete*`, `.TemporaryItems/`, `.Spotlight-V100/`, `*.part`, `*.crdownload`.
-3. **Debounces.** One Finder copy fires dozens of events; everything within a 4
-   second quiet window is coalesced into a single batch.
+3. **Debounces and de-duplicates.** One Finder/SMB copy fires several distinct
+   event types (`CREATE` *and* `CLOSE_WRITE` for the same file is normal, not a
+   glitch) within a 4 second quiet window. Events are normalized to `UPSERT` /
+   `DELETE` **before** dedup, so one file drop reaches the indexer exactly
+   once — the first version of this collapsed dedup on the raw event string
+   and silently double-embedded every file.
 4. Hands the batch to `~/ai/scripts/index-ingest.sh`.
 
 `index-ingest.sh` appends to `~/ai/ingest-manifest.jsonl` — one JSON object per
-change with timestamp, path, sha256, size, and MIME type, plus tombstones for
-deletions. **That manifest is the index right now**: an agent on the NUC can tail
-it to learn what changed.
+change with timestamp, path, sha256, size, MIME type, and an `embed` field
+(chunk count, skip reason, or error) — and calls `embed-file.py` to actually
+embed the file. **The manifest is the audit trail; the vector store below is
+the index.**
 
-### Wiring up real embedding
+## 6a. Semantic search over the ingest folder
 
-`index-ingest.sh` has a marked `EMBED HOOK` block with two documented paths:
+`setup-embeddings.sh` (run once, no sudo — nothing here needs root) installs:
 
-- **Open WebUI knowledge collection** — `POST /api/v1/files/` with a bearer token,
-  which puts documents into the RAG store the chat UI already queries.
-- **Direct Ollama embeddings** — `POST /api/embed` with `nomic-embed-text` into
-  your own vector store.
+- a Python venv at `~/ai/venv` with `sqlite-vec`, `pypdf`, `python-docx`, `requests`
+- the `nomic-embed-text` model in Ollama (274MB, 768-dim embeddings)
+- `embed_lib.py` / `embed-file.py` / `embed-query.py` in `~/ai/scripts/`
 
-Neither is enabled by default, because it needs an API key and a decision about
-where vectors live.
+Every file `index-ingest.sh` can extract text from (`.txt`, `.md`, `.pdf`,
+`.docx`, `.csv`, `.json`, `.yaml`, `.log`, or anything with a `text/*` MIME
+type) gets chunked (~2000 chars, 200 char overlap) and each chunk embedded via
+Ollama's `/api/embed` into a single SQLite file at `~/ai/embeddings.sqlite3`,
+using the `sqlite-vec` extension for the nearest-neighbor search itself. Files
+it can't read (images, archives, unrecognized binaries) still get a manifest
+entry — they're just not searchable by content.
+
+Re-dropping a changed file replaces its old chunks first (keyed on path), so
+edits don't leave stale duplicates in results. A delete event removes them
+too.
+
+**Search it:**
+
+```sh
+~/ai/venv/bin/python ~/ai/scripts/embed-query.py "eGPU cold boot troubleshooting"
+~/ai/venv/bin/python ~/ai/scripts/embed-query.py -k 8 --json "vendor pricing" | jq .
+```
+
+Returns the nearest chunks with source file (`rel`), a relevance distance
+(lower = closer), and the chunk text itself — go read the actual file if a
+hit looks right. This is meant for both you and a NUC-side agent: point it at
+a question about anything you've ever dropped in, without needing to
+remember which file it's in.
+
+### Why this and not Open WebUI's knowledge collection
+
+Both were on the table. Open WebUI's built-in collection (`POST
+/api/v1/files/` with a bearer token) is less code, but ties the data to that
+one container and its API. `sqlite-vec` is one file, zero new services, zero
+cloud dependency, and — per `PROJECT_STATE.md`'s **"Open Brain / Second
+Brain"** entry (Ollama + Supabase, currently *Planned*) — this is the same
+shape of pipeline that project will eventually want, just pointed at a
+heavier store. Migrating later means re-pointing `embed_lib.upsert_file` at
+Postgres/pgvector (or Supabase) instead of rewriting the ingestion path.
+
+### Relationship to the repo workflow in §3
+
+This embedding pipeline is scoped to the **ingest folder**, not the
+`office-plan` git working tree. The repo stays git-synced (§3) precisely so
+two agents never write the same files over SMB; embedding the repo's own
+docs was deliberately left out; anything that should be
+semantically searchable from there should be dropped into ingest like
+everything else, not read out of the live working tree.
 
 ## 7. Verification
 
@@ -220,9 +280,10 @@ mount | grep ts.net
 ls ~/AI-NUC/
 launchctl list | grep ai-nuc
 
-# End to end
+# End to end, including search
 cp somefile.pdf ~/AI-NUC/ai-nuc-ingest/inbox/
-ssh ai-nuc 'sleep 8; tail -3 ~/ai/ingest-manifest.jsonl'
+ssh ai-nuc 'sleep 8; tail -1 ~/ai/ingest-manifest.jsonl'   # embed field should say "embedded"
+ssh ai-nuc '~/ai/venv/bin/python ~/ai/scripts/embed-query.py "something from that file"'
 ```
 
 Logs: `~/ai/logs/ingest-watcher.log` (NUC),
@@ -241,6 +302,9 @@ Logs: `~/ai/logs/ingest-watcher.log` (NUC),
 | Watcher fires on junk | New macOS scaffolding filename | Extend `NOISE_RE` in `ingest-watcher.sh` |
 | Very slow transfers | NUC is on **WiFi** (`wlan0`), ~65 ms tailnet RTT | Move the NUC to wired ethernet — biggest single win for many small files |
 | `bad CPU type in executable` | Stale Intel sshfs | Not used any more; `brew uninstall macfuse` to clean up |
+| Manifest shows two `upsert` lines per single file drop | Fixed 2026-09-12: dedup was keyed on the raw inotify event string, so `CREATE` and `CLOSE_WRITE` for the same file both survived and were embedded twice | Update to the current `ingest-watcher.sh` — it normalizes to `UPSERT`/`DELETE` before dedup |
+| `embed` field always shows `"skipped","reason":"no extractable text"` even for `.md`/`.txt` | Fixed 2026-09-12: an argv off-by-one in `embed-file.py` (`sys.argv[:5]` instead of `[1:6]`) shifted every argument, so `mime` silently received the sha256 value | Update to the current `embed-file.py` |
+| `embed-query.py` returns nothing | Nothing embedded yet, or `setup-embeddings.sh` hasn't been run | Run it once; check `~/ai/embeddings.sqlite3` exists |
 
 ## 9. Known limitations
 

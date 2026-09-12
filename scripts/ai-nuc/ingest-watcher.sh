@@ -59,7 +59,17 @@ while true; do
     if [[ "$path" =~ $NOISE_RE ]]; then
       continue
     fi
-    pending+=("$event|$path")
+    # Normalize to a category before dedup: SMB copies routinely fire both
+    # CREATE and CLOSE_WRITE (sometimes more) for one file. Without this,
+    # `sort -u` in flush() sees "CREATE|path" and "CLOSE_WRITE|path" as
+    # distinct lines and index-ingest.sh processes (and re-embeds) the same
+    # file twice per drop — harmless since upserts are idempotent, but it
+    # doubles Ollama calls for nothing.
+    case "$event" in
+      *DELETE*|*MOVED_FROM*) category=DELETE ;;
+      *) category=UPSERT ;;
+    esac
+    pending+=("$category|$path")
   else
     rc=$?
     if (( rc > 128 )); then

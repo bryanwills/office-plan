@@ -6,13 +6,14 @@
 #
 # Each line of the batch file is "EVENT|/absolute/path".
 #
-# What this does today: builds a durable, append-only manifest (JSONL) of every
-# file that lands in the ingest folder, with sha256, size, and MIME type, and
-# moves successfully catalogued files into ingest/processed/.
+# What this does: builds a durable, append-only manifest (JSONL) of every
+# file that lands in the ingest folder (sha256, size, MIME type), embeds
+# extractable text (.txt/.md/.pdf/.docx/...) into a local sqlite-vec store via
+# embed-file.py so it becomes semantically searchable with embed-query.py, and
+# optionally moves catalogued files into ingest/processed/.
 #
-# What you wire up next: the EMBED HOOK section below. That is where your local
-# Ollama / Open WebUI knowledge collection ingestion goes. It is deliberately a
-# stub — see docs/infrastructure/ai-nuc-smb-mount.md for the two options.
+# See docs/infrastructure/ai-nuc-smb-mount.md §10 for what this pipeline is
+# for, its limits, and the migration path to a heavier store later.
 
 set -uo pipefail
 
@@ -22,8 +23,14 @@ MANIFEST="${MANIFEST:-$HOME/ai/ingest-manifest.jsonl}"
 PROCESSED="$INGEST_DIR/processed"
 FAILED="$INGEST_DIR/failed"
 MOVE_AFTER_INDEX="${MOVE_AFTER_INDEX:-0}"   # 1 = relocate originals into processed/
+EMBED_PY="${EMBED_PY:-$HOME/ai/venv/bin/python}"
+EMBED_SCRIPT="${EMBED_SCRIPT:-$HOME/ai/scripts/embed-file.py}"
+EMBED_LOG="${EMBED_LOG:-$HOME/ai/logs/embed.log}"
 
-mkdir -p "$(dirname "$MANIFEST")" "$PROCESSED" "$FAILED"
+mkdir -p "$(dirname "$MANIFEST")" "$(dirname "$EMBED_LOG")" "$PROCESSED" "$FAILED"
+
+embed_available=0
+[[ -x "$EMBED_PY" && -f "$EMBED_SCRIPT" ]] && embed_available=1
 
 ts() { date -Is; }
 say() { printf '%s [index] %s\n' "$(ts)" "$*"; }
@@ -35,10 +42,14 @@ indexed=0 removed=0 skipped=0
 while IFS='|' read -r event path; do
   [[ -n "${path:-}" ]] || continue
 
-  # Deletions: record the tombstone so the index can prune.
+  # Deletions: record the tombstone and drop any embedded chunks so search
+  # results don't outlive the file.
   if [[ "$event" == *DELETE* || "$event" == *MOVED_FROM* ]]; then
     printf '{"ts":%s,"event":"delete","path":%s}\n' \
       "$(json_escape "$(ts)")" "$(json_escape "$path")" >> "$MANIFEST"
+    if (( embed_available )); then
+      "$EMBED_PY" "$EMBED_SCRIPT" delete "$path" >> "$EMBED_LOG" 2>&1 || true
+    fi
     ((removed++))
     continue
   fi
@@ -53,25 +64,26 @@ while IFS='|' read -r event path; do
   mime=$(file -b --mime-type "$path" 2>/dev/null || echo application/octet-stream)
   rel="${path#$INGEST_DIR/}"
 
-  # ------------------------------------------------------------------------
-  # EMBED HOOK — replace this block to push the file into your RAG store.
-  #
-  # Option A (Open WebUI knowledge collection):
-  #   curl -sf -X POST "http://127.0.0.1:3000/api/v1/files/" \
-  #        -H "Authorization: Bearer $OPENWEBUI_API_KEY" \
-  #        -F "file=@${path}" || { echo "$path" >> "$FAILED/.log"; continue; }
-  #
-  # Option B (direct Ollama embeddings into your own vector store):
-  #   curl -sf http://127.0.0.1:11434/api/embed \
-  #        -d "{\"model\":\"nomic-embed-text\",\"input\":$(json_escape "$(head -c 8000 "$path")")}"
-  #
-  # Until one of these is enabled, the manifest below IS the index: an agent on
-  # the NUC can tail it to learn what changed and act accordingly.
-  # ------------------------------------------------------------------------
+  # ---------------------------------------------------------------- embed ---
+  # Extracts text (.txt/.md/.pdf/.docx/...), chunks it, embeds each chunk with
+  # nomic-embed-text via Ollama, and stores the vectors in
+  # ~/ai/embeddings.sqlite3 (sqlite-vec). Files it doesn't know how to read
+  # (images, archives, unrecognised binaries) are skipped for embedding but
+  # still get a manifest entry above — the manifest is the record of what
+  # arrived, embedding is what makes the text of it searchable.
+  embed_status='"not_attempted"'
+  if (( embed_available )); then
+    embed_json="$("$EMBED_PY" "$EMBED_SCRIPT" upsert "$path" "$rel" "$sha" "$mime" 2>>"$EMBED_LOG")"
+    if [[ -n "$embed_json" ]]; then
+      embed_status="$embed_json"
+    else
+      embed_status='{"status":"error","reason":"embed-file.py produced no output"}'
+    fi
+  fi
 
-  printf '{"ts":%s,"event":"upsert","path":%s,"rel":%s,"sha256":%s,"bytes":%s,"mime":%s}\n' \
+  printf '{"ts":%s,"event":"upsert","path":%s,"rel":%s,"sha256":%s,"bytes":%s,"mime":%s,"embed":%s}\n' \
     "$(json_escape "$(ts)")" "$(json_escape "$path")" "$(json_escape "$rel")" \
-    "$(json_escape "$sha")" "$size" "$(json_escape "$mime")" >> "$MANIFEST"
+    "$(json_escape "$sha")" "$size" "$(json_escape "$mime")" "$embed_status" >> "$MANIFEST"
   ((indexed++))
 
   if [[ "$MOVE_AFTER_INDEX" == "1" ]]; then
