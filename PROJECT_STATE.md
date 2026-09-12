@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-12 (Claude Code on the MacBook Pro, this repo — AI-NUC SMB mount + local RAG ingest pipeline, see §4f. Bryan is moving over to the AI-NUC next to configure a Honcho container, Gmail MCP, and continue Buzz — see §4f's handoff note for exactly what is and isn't done.)
+Last updated: 2026-09-12 (Claude Code on the MacBook Pro, this repo — AI-NUC SMB mount + local RAG ingest pipeline, see §4f. Also found and committed 3 docs that were sitting uncommitted directly on the NUC's own working tree from a prior session — including a real Honcho self-hosting plan — and corrected stale "GPU not powered on yet" / "Thunderbolt 5" facts in §5a-now that the eGPU build log already contradicted. Read §4f and §5a-now before assuming anything about NUC state.)
 
 ---
 
@@ -114,15 +114,39 @@ handoff state; that doc is the source of truth, don't duplicate it here.**
   currently *Planned*), just pointed at a lighter store for now. Treat this
   as that project's working seed, not one-off convenience.
 
-**Handoff — what is NOT done, so the next agent doesn't assume otherwise:**
-Bryan is moving over to work from the AI-NUC directly next, to configure:
-a **Honcho container** (no further detail given this session — don't assume
-what this is, ask him), the **Gmail MCP** (Hermes already runs one per §4b —
-unclear yet if this is that same integration or new work; ask rather than
-assume), and continuing **Buzz** (`buzz.bryanwills.dev` — already deployed on
-netcup per §5c, mid-onboarding per §6 item 4; unclear if "continue Buzz" here
-means resuming that same onboarding from the NUC or something new — ask).
-None of these three were started in this session. Don't report them as done.
+**Handoff — what's actually done vs. still ahead, corrected after finding
+uncommitted work already sitting on the AI-NUC's own working tree:**
+
+A prior session (on the NUC directly, not this one) had already written
+three docs there that were never committed or pushed — invisible to any
+other machine/agent until this update found and committed them:
+
+- **`docs/infrastructure/honcho-ai-nuc-setup.md`** — a full, real setup guide
+  for self-hosting **Honcho** (`plastic-labs/honcho`, via the
+  `elkimek/honcho-self-hosted` installer) on the NUC: a shared long-term
+  memory/context backend for Hermes across all of Bryan's devices
+  (PostgreSQL + pgvector + Redis, Deriver/Dialectic/Summary/Dream workers).
+  Recommends GLM-4.7-Flash locally for the light tier given the single
+  24GB 3090 Ti, notes embeddings need a cloud API key even in an otherwise
+  local setup (real limitation, not an oversight), and covers pointing
+  MacBook Pro's and ai-pi's Hermes at this same instance over Tailscale.
+  **Plan only — not yet installed/running as of this update.**
+- **`docs/infrastructure/openwebui-traefik-dynamic.yml`** — a Traefik dynamic
+  config to expose the NUC's OpenWebUI publicly at
+  `openwebui.bryanwills.dev` through the netcup VPS's existing Traefik,
+  over Tailscale (not the public internet directly) — same pattern as
+  Buzz's fix in §5c. **Template only — has placeholder `100.x.x.x`/`PORT`
+  values, not yet filled in or applied.**
+- **`docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md`** — see §5a-now,
+  already folded in above.
+
+So: Bryan's "Honcho container" and likely "buzz.bryanwills.dev" mentions
+refer to **executing these existing plans**, not starting from zero — read
+those two docs first rather than re-planning. "The gmail mcp" is still
+ambiguous (Hermes already runs one per §4b; unclear if this is that same
+integration) — ask rather than assume. None of the three docs' plans have
+been *executed* yet (Honcho isn't installed, the Traefik config isn't
+applied) — don't report them as done, only as planned.
 
 ---
 
@@ -135,16 +159,20 @@ None of these three were started in this session. Don't report them as done.
 - Desk: multi-monitor command center is intentional (wall HUD + several desk screens), not a later nice-to-have
 - Interim plan: Mac Mini M4 Pro 48GB (headless AI server) + TB4 NVMe SSD + TB4/TB5-to-10G adapters, until the custom build is complete
 
-### 5a-now. eGPU bridge + "NUC" (as of 2026-09-07 — supersedes prior PSU/target-host detail below)
-- **Minisforum MS-01** ("the NUC") — i9-13900H, 64GB RAM, 1TB SSD, will run Ubuntu 24.04 LTS. Purchased, delivery expected 2026-09-07 (today). This is the mini-PC decision that was previously open (`PROJECT_STATE.md` §7 used to list "Mini-PC after eGPU bridge, MS-01 vs MS-02 — still open"; **now resolved: MS-01**).
+### 5a-now. eGPU bridge + "NUC" — **WORKING as of 2026-09-08** (status corrected 2026-09-12; supersedes "nothing powered on" / "Thunderbolt 5" below, which were both wrong as of this update)
+
+- **Minisforum MS-01** ("the NUC", "ai-nuc") — i9-13900H, 64GB RAM, 1TB SSD, Ubuntu 24.04.4 LTS. Arrived and is up, headless, `multi-user.target`, driven over SSH (wired + Tailscale).
 - EVGA GeForce RTX 3090 Ti FTW3 Ultra 24 GB (Ti = 12V-2x6, not dual 8-pin)
 - **Corsair RX1000 PSU** + Corsair Type 4 special power adapter for the 3090 Ti (correction — prior note said RM1000x; RX1000 is correct per Bryan 2026-09-07)
-- Minisforum DEGv2 eGPU dock, connects via **Thunderbolt 5** — target host is now the **MS-01**, not the MacBook Pro (prior note said MacBook Pro; superseded)
-- **Nothing powered on yet as of 2026-09-07** — still pending the MS-01 arriving and the safety-gate/short-detection step in `docs/infrastructure/eGPU/ai-rig-build-log.md`
-- Models on `/Volumes/OllamaDrive` (currently attached to the MacBook Pro; will move to the MS-01 once it's set up)
-- Target model: Qwen3.8:27B via Ollama — used for OpenJarvis/Hermes tool-calling AND as the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`), same GPU serves both
-- Planned dual-use: this rig will be physically transported between home and work once operational, for local-AI work on a separate work-owned homebrew app — that work is out of scope for this repo (public, personal/LLC docs only) and will not be documented here
-- This is how local agents get a GPU without a hosted-model bill. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
+- Minisforum DEG2 V2 eGPU dock, connects via **Thunderbolt 4** (**not** Thunderbolt 5 — the prior note was wrong; corrected per the MS-01's actual dual-TB4-port hardware, confirmed in `docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md` §6). 40 Gb/s negotiated.
+- **Working and confirmed as of 2026-09-08** — `nvidia-smi` shows the 3090 Ti at 24564 MiB VRAM; Ollama 0.33.3 sees CUDA 8.6, 23.8 GiB available; `llama3.2:3b` benchmarked at ~257 tok/s decode, `qwen3.8:27b` at ~51 tok/s. **This unblocks OpenJarvis and the Hermes tool-calling gap (§4b) — GPU is no longer the blocker.**
+- **The bring-up was not trivial — a real "fallen off the bus" NVIDIA/Thunderbolt race condition was root-caused and fixed** (GSP firmware timing vs. the DEG2's Thunderbolt tunnel init order). Full root cause, the fix (kernel params, `egpu-bind.service`, driver flags), and the recovery procedure for future reboots/updates: `docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md`. **Read that file's §1 before rebooting this machine or running `apt upgrade`** — the fix is fragile and documented recovery steps exist for exactly this reason.
+- Model ceiling for the 24GB card: comfortably fits up to ~32B at Q4 (`qwen3.8:27b` fits at 17GB); do **not** attempt `llama3.1:70b` (~40GB at Q4, won't fit).
+- OcuLink upgrade path (PCIe 4.0 x4, ~64Gb/s, fewer Thunderbolt driver bugs) is documented as a future step in the same build log, not yet done — needs confirming whether the MS-01's x16 slot is actually free first.
+- Models on `/Volumes/OllamaDrive` (external exFAT, shared with the MacBook Pro) — Ollama model blobs only, never container/VM storage (exFAT has no sparse files or journaling).
+- Target model: Qwen3.8:27B via Ollama — used for OpenJarvis/Hermes tool-calling AND as the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`), same GPU serves both.
+- Planned dual-use: this rig will be physically transported between home and work once operational, for local-AI work on a separate work-owned homebrew app — that work is out of scope for this repo (public, personal/LLC docs only) and will not be documented here.
+- This is how local agents get a GPU without a hosted-model bill. Broader build log (hardware inventory, benchmarks): `docs/infrastructure/eGPU/ai-rig-build-log.md`. Focused failure/fix/recovery deep-dive: `docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md` (a different, complementary file — don't merge or treat one as superseding the other).
 
 ### 5b. Domains
 | Domain | Registrar | Status |
@@ -209,7 +237,7 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 
 ## 6. Immediate Priorities (as of 2026-09-07)
 
-1. **MS-01 arrival + eGPU first power-on** — MS-01 delivery expected 2026-09-07; once it's in hand, safety-gate the DEGv2 ATX/EPS wiring, short detection test, then a real local model (Qwen3.8:27B via Ollama). This unblocks OpenJarvis, the Hermes tool-calling gap, AND the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`) — one GPU serves all three. Nothing powered on yet. See `docs/infrastructure/eGPU/ai-rig-build-log.md`.
+1. ~~MS-01 arrival + eGPU first power-on~~ — **done, working since 2026-09-08** (status was stale in this file until 2026-09-12 — see §5a-now for the correction). GPU confirmed working, a real "fallen off the bus" bug was root-caused and fixed, see `docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md`. This unblocks OpenJarvis, the Hermes tool-calling gap, AND the trading-bot signal service — one GPU serves all three, all still need to actually be built against it.
 1a. **Trading bot: retire the freqtrade fork, start the Alpaca-adapter backend skeleton** — see `docs/trading/apexalgo-evaluation.md` for the full plan. ApexAlgo studied and rejected as a direct base (crypto/CCXT-only, no OSS license) but its architecture patterns (async engine, node-graph evaluator, risk nodes, event-driven bot console) are worth reimplementing clean-room against Alpaca first, then IBKR.
 2. **OpenJarvis command-center v0 on that GPU** — morning brief from local sources, conversation-mode voice, HUD + product dashboards. Direction: `docs/infrastructure/openjarvis-command-center.md`. Do not start by cloning Peter Mach's chrome or greetings.
 3. ~~Vaultwarden/Bitwarden fix~~ — **done**, see 5c. One loose end: extension logs in but vault data isn't loading yet — pick up when it hurts.
@@ -223,7 +251,7 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 11. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
-14. **Honcho container** — Bryan mentioned (2026-09-12) he's about to configure this, no detail given in that session. Do not assume what it is (a process manager, a specific named project, etc.) — ask him directly when this comes up. See §4f.
+14. **Honcho on the NUC** — full plan already written, not yet executed: `docs/infrastructure/honcho-ai-nuc-setup.md` (self-hosted `plastic-labs/honcho`, shared memory backend for Hermes across devices). See §4f for what's actually planned vs. done. Also open from that same batch: `docs/infrastructure/openwebui-traefik-dynamic.yml` (template to expose NUC's OpenWebUI publicly via netcup Traefik — placeholders not yet filled in).
 15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---

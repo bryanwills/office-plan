@@ -1,0 +1,52 @@
+# File location on the netcup VPS: /opt/stacks/traefik/dynamic/openwebui.yml
+#
+# Purpose: publicly expose OpenWebUI (running on ai-nuc, at home) under
+# openwebui.bryanwills.dev, with real TLS terminated on the VPS, WITHOUT
+# exposing ai-nuc's home connection or port directly. Traffic path is:
+#
+#   browser --HTTPS--> netcup VPS Traefik --Tailscale (private)--> ai-nuc:PORT
+#
+# Prerequisites before this file does anything useful:
+#   1. Tailscale must be installed and connected on BOTH the netcup VPS and
+#      ai-nuc, and both must be in the same tailnet (already true per your
+#      notes for ai-pi/MacBook/VPS — confirm ai-nuc is joined too).
+#   2. Get ai-nuc's Tailscale IP: on ai-nuc run `tailscale ip -4`
+#   3. Confirm OpenWebUI's actual bound port on ai-nuc (commonly 3000 or 8080
+#      depending on how you launched the container — check with
+#      `docker ps` on ai-nuc).
+#   4. DNS: add either
+#        - A record: openwebui.bryanwills.dev -> 152.53.82.233 (same IP as
+#          root bryanwills.dev, since the VPS is what's actually public), or
+#        - CNAME: openwebui.bryanwills.dev -> bryanwills.dev
+#      in whatever registrar/DNS panel now manages bryanwills.dev (Squarespace
+#      per your notes, unless you've since moved DNS management elsewhere).
+#   5. Confirm the certResolver name below matches whatever you already
+#      defined in Traefik's STATIC config (traefik.yml / traefik.toml) for
+#      Let's Encrypt — this file assumes it's named "letsencrypt". If your
+#      existing bigbraincoding/netcup Traefik setup uses a different
+#      resolver name, change it below to match, don't rename the existing one.
+
+http:
+  routers:
+    openwebui:
+      rule: "Host(`openwebui.bryanwills.dev`)"
+      entryPoints:
+        - websecure
+      service: openwebui
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    openwebui:
+      loadBalancer:
+        servers:
+          # Replace 100.x.x.x with ai-nuc's actual Tailscale IP,
+          # and PORT with OpenWebUI's actual container port on ai-nuc.
+          - url: "http://100.x.x.x:PORT"
+        # Optional but recommended since this backend is only reachable
+        # over the tailnet — Traefik's health check will just fail closed
+        # (503) if Tailscale is down, rather than hanging:
+        healthCheck:
+          path: /health
+          interval: "10s"
+          timeout: "3s"
