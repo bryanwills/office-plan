@@ -69,6 +69,7 @@ nav:
       - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
       - Documentation Tooling Risk: infrastructure/docs-tooling.md
       - VPS Hermes & Buzz Setup: infrastructure/vps-hermes-buzz-setup.md
+      - Tokens, context, and picking a model: infrastructure/tokens-context-and-picking-a-model.md
       - netcup Docker stacks: infrastructure/stacks/README.md
       - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
       - OpenJarvis command center: infrastructure/openjarvis-command-center.md
