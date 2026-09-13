@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-12 (Claude Code on the MacBook Pro, this repo — AI-NUC SMB mount + local RAG ingest pipeline, see §4f. Also found and committed 3 docs that were sitting uncommitted directly on the NUC's own working tree from a prior session — including a real Honcho self-hosting plan — and corrected stale "GPU not powered on yet" / "Thunderbolt 5" facts in §5a-now that the eGPU build log already contradicted. Read §4f and §5a-now before assuming anything about NUC state.)
+Last updated: 2026-09-13 (Cursor on ai-nuc — formatted the second SanDisk as `ai-data` at `/mnt/ai-data`, stood up Honcho under `/opt/stacks/honcho`, wrote the token/context model-choice guide. Buzz onboarding stays a MacBook-side task in a separate window; do not start it from the NUC this session. Read §4f and §5a-now before assuming NUC state.)
 
 ---
 
@@ -121,16 +121,14 @@ A prior session (on the NUC directly, not this one) had already written
 three docs there that were never committed or pushed — invisible to any
 other machine/agent until this update found and committed them:
 
-- **`docs/infrastructure/honcho-ai-nuc-setup.md`** — a full, real setup guide
-  for self-hosting **Honcho** (`plastic-labs/honcho`, via the
-  `elkimek/honcho-self-hosted` installer) on the NUC: a shared long-term
-  memory/context backend for Hermes across all of Bryan's devices
-  (PostgreSQL + pgvector + Redis, Deriver/Dialectic/Summary/Dream workers).
-  Recommends GLM-4.7-Flash locally for the light tier given the single
-  24GB 3090 Ti, notes embeddings need a cloud API key even in an otherwise
-  local setup (real limitation, not an oversight), and covers pointing
-  MacBook Pro's and ai-pi's Hermes at this same instance over Tailscale.
-  **Plan only — not yet installed/running as of this update.**
+- **`docs/infrastructure/honcho-ai-nuc-setup.md`** — **executed 2026-09-13
+  (supersedes "plan only")**. Honcho is running on ai-nuc at
+  `/opt/stacks/honcho` (symlink onto `/mnt/ai-data/stacks/honcho`). API
+  healthy at `:8000`. Local Ollama only: Deriver/etc on `qwen3.5:9b`,
+  embeddings `nomic-embed-text` at 768-d (no cloud key; elkimek
+  `setup.sh` + `~/honcho` path was not used). Hermes on the Mac still
+  needs `~/.honcho/config.json` from `stacks/honcho/hermes-config.json`.
+  Detail: that same doc, plus `stacks/honcho/README.md`.
 - **`docs/infrastructure/openwebui-traefik-dynamic.yml`** — a Traefik dynamic
   config to expose the NUC's OpenWebUI publicly at
   `openwebui.bryanwills.dev` through the netcup VPS's existing Traefik,
@@ -140,13 +138,12 @@ other machine/agent until this update found and committed them:
 - **`docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md`** — see §5a-now,
   already folded in above.
 
-So: Bryan's "Honcho container" and likely "buzz.bryanwills.dev" mentions
-refer to **executing these existing plans**, not starting from zero — read
-those two docs first rather than re-planning. "The gmail mcp" is still
-ambiguous (Hermes already runs one per §4b; unclear if this is that same
-integration) — ask rather than assume. None of the three docs' plans have
-been *executed* yet (Honcho isn't installed, the Traefik config isn't
-applied) — don't report them as done, only as planned.
+As of 2026-09-13: Honcho is installed and healthy. The OpenWebUI Traefik
+template is still a template. Buzz (`buzz.bryanwills.dev`) is still the
+MacBook onboarding leftover from §5c — Bryan is handling that in a
+separate Mac chat window; do not start Buzz work from the NUC unless he
+asks again. "The gmail mcp" is still ambiguous (Hermes already runs one
+per §4b) — ask rather than assume.
 
 ---
 
@@ -170,6 +167,7 @@ applied) — don't report them as done, only as planned.
 - Model ceiling for the 24GB card: comfortably fits up to ~32B at Q4 (`qwen3.8:27b` fits at 17GB); do **not** attempt `llama3.1:70b` (~40GB at Q4, won't fit).
 - OcuLink upgrade path (PCIe 4.0 x4, ~64Gb/s, fewer Thunderbolt driver bugs) is documented as a future step in the same build log, not yet done — needs confirming whether the MS-01's x16 slot is actually free first.
 - Models on `/Volumes/OllamaDrive` (external exFAT, shared with the MacBook Pro) — Ollama model blobs only, never container/VM storage (exFAT has no sparse files or journaling).
+- **Stateful disk on ai-nuc (2026-09-13):** second SanDisk Extreme 55AE serial `...323735`, ext4 label `ai-data`, mounted `/mnt/ai-data`. `/opt/stacks` and `/opt/backups` are symlinks onto it. First SanDisk (`OllamaDrive`, serial `...363436`) was left connected and was never formatted.
 - Target model: Qwen3.8:27B via Ollama — used for OpenJarvis/Hermes tool-calling AND as the trading-bot signal service (see `docs/trading/apexalgo-evaluation.md`), same GPU serves both.
 - Planned dual-use: this rig will be physically transported between home and work once operational, for local-AI work on a separate work-owned homebrew app — that work is out of scope for this repo (public, personal/LLC docs only) and will not be documented here.
 - This is how local agents get a GPU without a hosted-model bill. Broader build log (hardware inventory, benchmarks): `docs/infrastructure/eGPU/ai-rig-build-log.md`. Focused failure/fix/recovery deep-dive: `docs/infrastructure/eGPU/ai-nuc-egpu-buildlog.md` (a different, complementary file — don't merge or treat one as superseding the other).
@@ -251,7 +249,7 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 11. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
-14. **Honcho on the NUC** — full plan already written, not yet executed: `docs/infrastructure/honcho-ai-nuc-setup.md` (self-hosted `plastic-labs/honcho`, shared memory backend for Hermes across devices). See §4f for what's actually planned vs. done. Also open from that same batch: `docs/infrastructure/openwebui-traefik-dynamic.yml` (template to expose NUC's OpenWebUI publicly via netcup Traefik — placeholders not yet filled in).
+14. ~~**Honcho on the NUC**~~ — **running 2026-09-13.** Remaining: copy `stacks/honcho/hermes-config.json` to `~/.honcho/config.json` on the MacBook and start a new Hermes session. OpenWebUI Traefik template still not applied. Next NUC stack work: migrate OpenWebUI to `/opt/stacks/open-webui` and turn on tools/PDF/MCP.
 15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---

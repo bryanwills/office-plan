@@ -1,145 +1,100 @@
-# Self-Hosted Honcho on ai-nuc — Setup Guide
+# Self-Hosted Honcho on ai-nuc
 
-## Why this file, not a hand-written docker-compose.yml
+**Status:** running on ai-nuc as of 2026-09-13  
+**API:** `http://127.0.0.1:8000` (healthy). Tailscale: `http://100.73.71.29:8000`  
+**Data:** `/opt/stacks/honcho` → `/mnt/ai-data/stacks/honcho` on the `ai-data` disk  
+**Inference:** host Ollama only. Deriver/summary/dream/dialectic = `qwen3.5:9b`. Embeddings = `nomic-embed-text` (768-d). No cloud key.
 
-The self-hosted Honcho project (elkimek/honcho-self-hosted) ships its own
-`docker-compose.yml`, `config.toml`, and `env.example`, layered on top of the
-official `plastic-labs/honcho` repo. I don't have verbatim access to those
-files' exact current contents, and fabricating a compose file by hand risks
-drifting from what the maintainer actually ships (which is exactly the kind
-of stale/incomplete-doc problem you've flagged before). So this guide uses
-the project's real, documented install path and tells you exactly what to
-change for your hardware, rather than reconstructing the compose file from
-memory.
+The earlier elkimek `setup.sh` path (clone into `~/honcho`, cloud embeddings) is **superseded**. We used the current [plastic-labs/honcho](https://github.com/plastic-labs/honcho) config format (`model_config` + `embedding.vector_dimensions`) and the `/opt/stacks` convention.
 
-Source: https://github.com/elkimek/honcho-self-hosted
-Upstream: https://github.com/plastic-labs/honcho
+Overlay in this repo: `stacks/honcho/`. Deploy script: `scripts/ai-nuc/deploy-honcho.sh`.
 
-## Prerequisites (confirmed from the project docs)
+---
 
-- Ubuntu 22.04+ (ai-nuc is on 24.04 — fine)
-- Docker Engine + Compose plugin (you already have this on ai-nuc)
-- One cloud API key for embeddings only (see "Embeddings caveat" below) —
-  OpenRouter is the simplest since it's already in your stack elsewhere
+## What is running
 
-## 1. Install (one-command path)
+```
+Hermes (Mac) ──Tailscale──► ai-nuc:8000  Honcho API
+                                 │
+                                 ├── PostgreSQL + pgvector   (127.0.0.1:5432, on ai-data)
+                                 ├── Redis                   (127.0.0.1:6379, on ai-data)
+                                 └── Deriver worker
+                                         │
+                                         └── host Ollama :11434
+                                              ├── qwen3.5:9b          (every-message work)
+                                              └── nomic-embed-text    (vectors)
+```
+
+| Service | Container | Notes |
+|---|---|---|
+| API | `honcho-api-1` | `0.0.0.0:8000`, `/health` → `{"status":"ok"}` |
+| Deriver | `honcho-deriver-1` | Small model so it does not evict `qwen3.8:27b-hermes` |
+| Database | `honcho-database-1` | pgvector/pg15, bind mount `./data/pgdata` |
+| Redis | `honcho-redis-1` | bind mount `./data/redis` |
+| MCP | not started | `docker compose --profile mcp up -d` publishes **8787**, never 3000 (OpenWebUI) |
+
+Docker network: `ai-nuc`. Compose plugin lives at `~/.docker/cli-plugins/docker-compose` (the distro Docker package on this box has no compose).
+
+---
+
+## Why 9B for Honcho, 27B for Hermes
+
+Honcho's Deriver runs on **every message**. If it loaded the 27B, it would kick Hermes off the 24 GB card. `qwen3.5:9b` (~6.6 GB) is the always-on memory worker. See [tokens, context, and picking a model](tokens-context-and-picking-a-model.md).
+
+---
+
+## Point Hermes on the MacBook at this instance
 
 ```bash
-curl -sL https://raw.githubusercontent.com/elkimek/honcho-self-hosted/main/setup.sh -o /tmp/setup.sh
-bash /tmp/setup.sh
+mkdir -p ~/.honcho
+# from the office-plan clone on the Mac:
+cp stacks/honcho/hermes-config.json ~/.honcho/config.json
 ```
 
-This clones both repos, copies the config files into place, prompts for
-provider info, brings the stack up, and writes `~/.honcho/config.json` so
-Hermes points at your local instance instead of `api.honcho.dev`.
+That file already has `"baseUrl": "http://100.73.71.29:8000"`. Start a **new** Hermes session after copying. On ai-nuc itself, `~/.honcho/config.json` points at `http://127.0.0.1:8000`.
 
-When it asks how you want to run LLM inference, choose the **Local / LAN**
-option and give it:
+Model in Hermes stays `qwen3.8:27b-hermes`, context 64000. Honcho does not replace that. It is the filing cabinet, not the desk.
 
-```
-Server URL: http://localhost:11434/v1
-```
+---
 
-(or `http://<ai-nuc-tailscale-ip>:11434/v1` if Hermes on MacBook Pro / ai-pi
-will also point at this same Honcho instance remotely — see step 4).
-
-## 2. What actually gets deployed
-
-```
-Hermes Agent ──► localhost:8000 (Honcho API, on ai-nuc)
-                      │
-                      ├── PostgreSQL + pgvector  (ai-nuc)
-                      ├── Redis cache            (ai-nuc)
-                      │
-                      └── Deriver / Dialectic / Summary / Dream workers
-                              │
-                              ├── Primary: your Ollama on ai-nuc
-                              └── Embeddings: cloud API (see below)
-```
-
-Files land at `~/honcho/` on ai-nuc (docker-compose.yml, config.toml, .env)
-and `~/honcho-self-hosted/` (the config layer you cloned).
-
-## 3. Model choice for ai-nuc's hardware specifically
-
-The project's own guidance for reliable function-calling at self-hosted
-scale:
-
-| Model | Params | Ollama name | Fit for ai-nuc (RTX 3090 Ti, 24GB VRAM) |
-|---|---|---|---|
-| GLM-4.7 Flash | 30B MoE | `glm-4.7-flash` | Good fit — MoE architecture means active params per token are much smaller than 30B, should run comfortably alongside your other Ollama use |
-| Llama 3.3 | 70B | `llama3.3:70b` | Needs ~40GB VRAM for a full GPU load — your single 3090 Ti (24GB) will offload to CPU/RAM, which will be slow for a "steady-state light tier" model |
-
-Given your goal of a small, fast, always-on model for the Deriver (runs on
-every message) plus a heavier model only for hard Dialectic queries and the
-~8-hour Dream consolidation pass, **GLM-4.7-Flash for the light tier is the
-better match** for your single-GPU setup. Pull it first:
+## Deploy / update
 
 ```bash
-ollama pull glm-4.7-flash
+~/office-plan/scripts/ai-nuc/deploy-honcho.sh
 ```
 
-If you want a distinct heavier tier for Dialectic (max) and Dream, that's
-where you'd reach for a cloud model via OpenRouter instead of trying to fit
-a 70B model on one 24GB card — set that in `config.toml` per-component (the
-project supports mixing providers per component, e.g. Ollama for Deriver,
-OpenRouter for Dream).
-
-## 4. Embeddings caveat (be aware of this, it's a real limitation)
-
-Local Ollama generally can't serve embedding models well enough for Honcho's
-semantic search. The project's own docs are direct about this: **you need a
-cloud API key just for embeddings**, even in an otherwise fully local setup.
-This is set in `.env` as `LLM_EMBEDDING_API_KEY` / `LLM_EMBEDDING_BASE_URL` /
-`LLM_EMBEDDING_MODEL` (default `openai/text-embedding-3-small` via
-OpenRouter). Everything else — the actual conversation/observation data —
-still stays on ai-nuc; only the embedding *request content* passes through
-that provider, not the stored memory itself. If that's not acceptable, you
-can disable embeddings entirely and Honcho still works, just without vector
-semantic search (keyword-only recall).
-
-## 5. Point Hermes on MacBook Pro and ai-pi at this same instance
-
-Right now each device's Hermes is siloed. To make ai-nuc's Honcho the shared
-memory backend for all three:
-
-- On MacBook Pro and ai-pi, edit `~/.honcho/config.json` to point at
-  `http://<ai-nuc-tailscale-ip>:8000` instead of `localhost:8000`
-- Since this traffic stays inside your tailnet, you do **not** need to
-  expose Honcho's port 8000 publicly or put it behind the netcup VPS
-  Traefik — keep it Tailscale-only, unlike OpenWebUI which needs a public
-  bryanwills.dev subdomain
-
-## 6. Backup — fold this into your existing pipeline
-
-The project documents a straightforward Postgres dump:
+First boot creates pgvector columns at 1536 (Honcho default). The script then runs `scripts/configure_embeddings.py --yes` so they match `nomic-embed-text` (768). Do not skip that if you rebuild the database from scratch.
 
 ```bash
-cd ~/honcho
-docker compose exec database pg_dump -U honcho honcho > backup.sql
-```
-
-Rather than a one-off manual step, wire this into the same nightly pattern
-you already run for Oxidized/etckeeper (see your infra-config-backup setup):
-cron this dump on ai-nuc, then push it to the same Forgejo/Azure DevOps
-mirror you already use for config backups, so Honcho's memory data gets the
-same versioned, redundant treatment as everything else.
-
-## 7. Verify it's running
-
-```bash
+cd /opt/stacks/honcho
 docker compose ps
-curl -s http://localhost:8000/openapi.json | head -1
+docker compose logs -f api deriver
+curl -s http://127.0.0.1:8000/health
 ```
 
-## Known limitation worth knowing up front
+---
 
-Honcho's agents use function calling, which is not compatible with
-end-to-end encryption — the LLM provider (Ollama locally, or your cloud
-embedding provider) sees request content in the clear at inference time,
-even though stored data stays on ai-nuc. Since you're seeding this with
-your neurodivergent-related context from the Claude export, that's worth
-being deliberate about: local Ollama inference keeps that content off any
-third party's servers entirely, which is the strongest argument for doing
-the heavier lift of the local-model route rather than defaulting to a cloud
-provider for the Deriver/Dialectic tiers too.
+## Backup
+
+```bash
+mkdir -p /opt/backups/honcho
+cd /opt/stacks/honcho
+docker compose exec database pg_dump -U postgres postgres \
+  > /opt/backups/honcho/honcho-$(date +%Y%m%d).sql
+```
+
+---
+
+## What this is not
+
+- Not Buzz. `buzz.bryanwills.dev` is a separate onboarding on the MacBook.
+- Not OpenWebUI chat history. That still lives in the `open-webui` Docker volume until that stack is migrated.
+- Not a 262k context window. Honcho stores observations on disk. The live window is still the GPU desk.
+
+---
+
+## Known limits
+
+- Deriver quality is "good enough local 9B," not Plastic Labs' Neuromancer 8B. Observations will be less sharp. Data stays on the NUC.
+- `USE_AUTH = false`. Port 8000 is on all interfaces. Keep this Tailscale/LAN only until auth is on.
+- Ollama sees request content in the clear at inference time (function calling). Stored rows stay on `ai-data`.

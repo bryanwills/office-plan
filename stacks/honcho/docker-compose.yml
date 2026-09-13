@@ -1,0 +1,136 @@
+# Honcho on ai-nuc — overlay for /opt/stacks/honcho
+# Runtime tree is a plastic-labs/honcho clone. This file replaces
+# docker-compose.yml.example. Do not bind MCP to 3000 (OpenWebUI owns it).
+#
+#   /opt/stacks/honcho/docker-compose.yml   (this file, copied in)
+#   docker compose up -d --build
+#
+# API is on all interfaces so Hermes on the Mac can reach it over Tailscale.
+# Postgres and Redis stay on 127.0.0.1.
+
+name: honcho
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["sh", "docker/entrypoint.sh"]
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/app/.venv/bin/python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 40s
+    volumes:
+      - ./config.toml:/app/config.toml:ro
+      - honcho-lancedb:/app/lancedb_data
+    environment:
+      - DB_CONNECTION_URI=postgresql+psycopg://postgres:postgres@database:5432/postgres
+      - CACHE_URL=redis://redis:6379/0?suppress=true
+      - CACHE_ENABLED=true
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped
+
+  deriver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/.venv/bin/python", "-m", "src.deriver"]
+    depends_on:
+      api:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.toml:/app/config.toml:ro
+      - honcho-lancedb:/app/lancedb_data
+    environment:
+      - DB_CONNECTION_URI=postgresql+psycopg://postgres:postgres@database:5432/postgres
+      - CACHE_URL=redis://redis:6379/0?suppress=true
+      - CACHE_ENABLED=true
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped
+
+  database:
+    image: pgvector/pgvector:pg15
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    command: ["postgres", "-c", "max_connections=200"]
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./data/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8.2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional: docker compose --profile mcp up -d
+  # Port 8787, not 3000 (OpenWebUI).
+  mcp:
+    profiles: ["mcp"]
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8787:3000"
+    environment:
+      - HONCHO_API_URL=http://api:8000
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped
+
+volumes:
+  honcho-lancedb:
+
+networks:
+  default:
+    name: ai-nuc
+    external: false

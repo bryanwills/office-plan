@@ -45,8 +45,9 @@ Standardizing Docker deployments on ai-nuc to match the `/opt/stacks/<name>/` co
 |---------|------------------|-----------------|--------|
 | open-webui | Docker volume `open-webui` | `/opt/stacks/open-webui/` | 🔄 Pending |
 | ollama | `/usr/local/bin/ollama` (native) | Keep native | ✅ Done |
-| buzz | Not installed | `/opt/stacks/buzz/` | ⏳ Planned |
-| hermes | Not installed | Native + systemd | ⏳ Planned |
+| honcho | `/opt/stacks/honcho` on `ai-data` | `/opt/stacks/honcho/` | ✅ Running (2026-09-13) |
+| buzz | Not on NUC (netcup + Mac onboarding) | Mac / `buzz.bryanwills.dev` | ⏳ Separate Mac window |
+| hermes | MacBook client → NUC Ollama | Native on Mac, memory on NUC | 🔄 Point at Honcho next |
 
 ---
 
