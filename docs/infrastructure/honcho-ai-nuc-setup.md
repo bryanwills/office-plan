@@ -45,13 +45,22 @@ Honcho's Deriver runs on **every message**. If it loaded the 27B, it would kick 
 
 ## Point Hermes on the MacBook at this instance
 
-```bash
-mkdir -p ~/.honcho
-# from the office-plan clone on the Mac:
-cp stacks/honcho/hermes-config.json ~/.honcho/config.json
+**Done 2026-09-13.** Mac dotfiles live under `~/.config`. The tracked file is:
+
+```
+~/.config/.honcho/config.json
 ```
 
-That file already has `"baseUrl": "http://100.73.71.29:8000"`. Start a **new** Hermes session after copying. On ai-nuc itself, `~/.honcho/config.json` points at `http://127.0.0.1:8000`.
+Hermes itself does not read that XDG path. It looks at `~/.honcho/config.json` (after `$HERMES_HOME/honcho.json` and `~/.hermes/honcho.json`). The install script wrote the tracked file and pointed `~/.honcho` at it:
+
+```bash
+# already run on the Mac; re-run only if the pointer is missing
+bash scripts/macbook/install-honcho-config.sh
+```
+
+That copies `stacks/honcho/hermes-config.json` (baseUrl `http://100.73.71.29:8000`) and runs `ln -sfn ~/.config/.honcho ~/.honcho` if `~/.honcho` is not already a real directory.
+
+On ai-nuc itself, `~/.honcho/config.json` still points at `http://127.0.0.1:8000` (NUC-local, not part of the Mac dotfiles repo).
 
 Model in Hermes stays `qwen3.8:27b-hermes`, context 64000. Honcho does not replace that. It is the filing cabinet, not the desk.
 

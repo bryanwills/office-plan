@@ -76,7 +76,7 @@ done
 docker compose ps
 if [[ "${ok}" -eq 1 ]]; then
   echo "Honcho API is up at http://127.0.0.1:8000 (Tailscale: http://100.73.71.29:8000)"
-  echo "On the MacBook: mkdir -p ~/.honcho && cp ${OVERLAY}/hermes-config.json ~/.honcho/config.json"
+  echo "On the MacBook: bash ${REPO_ROOT}/scripts/macbook/install-honcho-config.sh"
 else
   echo "API did not pass /health yet. Logs:" >&2
   docker compose logs --tail 80 api deriver || true

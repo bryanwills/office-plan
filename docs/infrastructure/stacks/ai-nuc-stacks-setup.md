@@ -47,7 +47,7 @@ Standardizing Docker deployments on ai-nuc to match the `/opt/stacks/<name>/` co
 | ollama | `/usr/local/bin/ollama` (native) | Keep native | ✅ Done |
 | honcho | `/opt/stacks/honcho` on `ai-data` | `/opt/stacks/honcho/` | ✅ Running (2026-09-13) |
 | buzz | Not on NUC (netcup + Mac onboarding) | Mac / `buzz.bryanwills.dev` | ⏳ Separate Mac window |
-| hermes | MacBook client → NUC Ollama | Native on Mac, memory on NUC | 🔄 Point at Honcho next |
+| hermes | MacBook client → NUC Ollama + Honcho | Native on Mac, memory on NUC | ✅ Pointer done (`~/.config/.honcho`) |
 
 ---
 

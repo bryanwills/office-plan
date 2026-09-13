@@ -29,11 +29,16 @@ Embeddings: local `nomic-embed-text` (768-d) through host Ollama. No cloud key.
 
 ## Hermes on the MacBook
 
+**Done 2026-09-13.** Tracked path (Mac `~/.config` dotfiles):
+
+```
+~/.config/.honcho/config.json
+```
+
+Hermes reads `~/.honcho/config.json`, so that directory is a symlink to `~/.config/.honcho`. Re-run only if the pointer is missing:
+
 ```bash
-mkdir -p ~/.honcho
-# copy stacks/honcho/hermes-config.json from this repo
-cp hermes-config.json ~/.honcho/config.json
-# then start a new Hermes session
+bash scripts/macbook/install-honcho-config.sh
 ```
 
 Do not point Hermes at `api.honcho.dev` if you want memory to stay on this disk.

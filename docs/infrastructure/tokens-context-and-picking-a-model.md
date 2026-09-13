@@ -98,6 +98,7 @@ You do not need to delete chats to "free tokens." You need a **new session** so 
 
 - OpenWebUI chat history on disk
 - Hermes session files on the Mac (`~/.hermes/`)
+- Honcho config on the Mac (`~/.config/.honcho/config.json`, Hermes finds it via `~/.honcho`)
 - Honcho Postgres (observations, peer cards)
 - The 1 TB `ai-data` drive
 - How many chat tabs you have sitting idle

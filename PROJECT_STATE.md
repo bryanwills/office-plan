@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-13 (Cursor on ai-nuc — formatted the second SanDisk as `ai-data` at `/mnt/ai-data`, stood up Honcho under `/opt/stacks/honcho`, wrote the token/context model-choice guide. Buzz onboarding stays a MacBook-side task in a separate window; do not start it from the NUC this session. Read §4f and §5a-now before assuming NUC state.)
+Last updated: 2026-09-13 afternoon (Cursor on ai-nuc — Mac Honcho pointer is done: tracked file is `~/.config/.honcho/config.json` with `~/.honcho` as the Hermes lookup symlink. NUC Honcho still healthy. Buzz stays a separate Mac window. Read §4f and §5a-now before assuming NUC state.)
 
 ---
 
@@ -126,8 +126,10 @@ other machine/agent until this update found and committed them:
   `/opt/stacks/honcho` (symlink onto `/mnt/ai-data/stacks/honcho`). API
   healthy at `:8000`. Local Ollama only: Deriver/etc on `qwen3.5:9b`,
   embeddings `nomic-embed-text` at 768-d (no cloud key; elkimek
-  `setup.sh` + `~/honcho` path was not used). Hermes on the Mac still
-  needs `~/.honcho/config.json` from `stacks/honcho/hermes-config.json`.
+  `setup.sh` + `~/honcho` path was not used). Mac Hermes pointer
+  **done 2026-09-13**: tracked file is `~/.config/.honcho/config.json`,
+  with `~/.honcho` → `~/.config/.honcho` so Hermes can find it.
+  Installer (already run): `scripts/macbook/install-honcho-config.sh`.
   Detail: that same doc, plus `stacks/honcho/README.md`.
 - **`docs/infrastructure/openwebui-traefik-dynamic.yml`** — a Traefik dynamic
   config to expose the NUC's OpenWebUI publicly at
@@ -249,7 +251,7 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 11. **Student loan deferment** — needs to go back into deferment before the 90/120-day mark (60-day mark hit Aug 30, 2026); exploring having someone else make the call due to anxiety, possibly via a signed waiver.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
-14. ~~**Honcho on the NUC**~~ — **running 2026-09-13.** Remaining: copy `stacks/honcho/hermes-config.json` to `~/.honcho/config.json` on the MacBook and start a new Hermes session. OpenWebUI Traefik template still not applied. Next NUC stack work: migrate OpenWebUI to `/opt/stacks/open-webui` and turn on tools/PDF/MCP.
+14. ~~**Honcho on the NUC + Mac pointer**~~ — **running 2026-09-13.** NUC API healthy. Mac uses `~/.config/.honcho/config.json` (dotfiles) plus `~/.honcho` symlink. OpenWebUI Traefik template still not applied. Next NUC stack work: migrate OpenWebUI to `/opt/stacks/open-webui` and turn on tools/PDF/MCP.
 15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---
