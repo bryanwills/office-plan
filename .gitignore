@@ -23,3 +23,5 @@ docs/resources/temp.zip
 
 # Promo recordings and other large local media
 media/**
+
+.cache_ggshield
