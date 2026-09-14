@@ -78,6 +78,12 @@ nav:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
       - eGPU 3090 Ti bridge: infrastructure/eGPU/ai-rig-build-log.md
+  - Idea Pipeline:
+      - How the pipeline works: pipeline/README.md
+      - Idea Brief Template: pipeline/idea-brief-template.md
+      - Definition of Done: pipeline/definition-of-done.md
+      - VP of PMs identity: pipeline/vp-of-pms-identity.md
+      - First brief (creator provenance): pipeline/ideas/creator-provenance-key.md
   - Trading Bot:
       - ApexAlgo Evaluation & Architecture Plan: trading/apexalgo-evaluation.md
   - Founder Resources:
