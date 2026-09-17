@@ -1,7 +1,7 @@
 # Tokens, context, and picking a model on this GPU
 
 **Status:** living guide for this machine (ai-nuc, RTX 3090 Ti 24 GB)  
-**Audience:** you, and anyone neurodivergent who got dumped into "262k context" talk and felt stupid. You are not. The words are overloaded.
+**Audience:** you, and anyone neurodivergent who got dumped into "262k context" talk and came away without clarity on what any of it meant. That's not a you problem — the words are overloaded.
 
 This page is the practical version. Numbers below are for **this** 3090 Ti, not a datacenter.
 
@@ -38,9 +38,9 @@ So "300,000 tokens" is not 300,000 words. It is closer to **200,000 to 225,000 w
 
 ---
 
-## What your coworker meant by "300,000 tokens"
+## The desk math behind "300,000 tokens" on an EVGA FTW3 Ultra RTX 3090 Ti
 
-He did the **brochure math**, not the **desk math**.
+After I told a coworker which card this box was running, he quoted back the **brochure math**, not the **desk math** — and that mismatch is worth untangling because it's a very common mix-up, not a mistake either of us made.
 
 `qwen3.8:27b` **advertises** a max context of **262,144 tokens** (about 262k). People round that to "300k". That number is:
 

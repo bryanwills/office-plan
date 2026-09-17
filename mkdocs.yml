@@ -46,6 +46,9 @@ theme:
 extra_css:
   - stylesheets/furo-style.css
 
+extra_javascript:
+  - javascripts/external-links.js
+
 markdown_extensions:
   - admonition
   - pymdownx.details
