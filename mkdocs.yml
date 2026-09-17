@@ -9,6 +9,9 @@ edit_uri: "edit/main/docs/"
 
 theme:
   name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -30,13 +33,18 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
+    - navigation.indexes
     - navigation.expand
     - navigation.top
+    - navigation.footer
     - search.suggest
     - search.highlight
     - content.code.copy
     - content.action.edit
     - toc.follow
+
+extra_css:
+  - stylesheets/furo-style.css
 
 markdown_extensions:
   - admonition
@@ -53,6 +61,7 @@ markdown_extensions:
 
 plugins:
   - search
+  - section-index
 
 nav:
   - Home: index.md
@@ -68,18 +77,41 @@ nav:
       - Email & Domain Decision: infrastructure/email-and-domain.md
       - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
       - Documentation Tooling Risk: infrastructure/docs-tooling.md
-      - VPS Hermes & Buzz Setup: infrastructure/vps-hermes-buzz-setup.md
       - Tokens, context, and picking a model: infrastructure/tokens-context-and-picking-a-model.md
-      - netcup Docker stacks: infrastructure/stacks/README.md
-      - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
       - OpenJarvis command center: infrastructure/openjarvis-command-center.md
-      - Local AI eGPU rig: infrastructure/eGPU/ai-rig-build-log.md
+      - Cursor IDE — Local Ollama config: infrastructure/cursor-local-ollama-setup.md
       - Claude Code on Ubuntu setup: infrastructure/claude-code-ubuntu-setup.md
+      - Self-hosted Honcho on ai-nuc: infrastructure/honcho-ai-nuc-setup.md
+      - Hermes + Ollama HTTP 500 fix: infrastructure/hermes-ollama-500-fix.md
+      - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
+      - Gmail cleanup scripts: infrastructure/scripts/README.md
+      - AI-NUC as a mounted drive (SMB/Tailscale): infrastructure/ai-nuc-smb-mount.md
+      - Ubuntu Desktop → Server conversion (ai-nuc): infrastructure/ubuntu-desktop-to-server.md
+      - VPS & Hosting:
+          - VPS Hermes & Buzz Setup: infrastructure/vps-hermes-buzz-setup.md
+          - netcup VPS configuration: infrastructure/netcup_vps_configuration.md
+          - Post–Micro Center VPS decision notes: infrastructure/post_micro_center_trip_vps.md
+          - Little Creek → netcup migration concerns: resources/migration_concerns.md
+      - netcup Docker Stacks:
+          - Overview: infrastructure/stacks/README.md
+          - ai-nuc stacks setup: infrastructure/stacks/ai-nuc-stacks-setup.md
+          - Buzz setup on netcup: infrastructure/stacks/buzz/SETUP.md
+          - Vaultwarden migration: infrastructure/stacks/vaultwarden/MIGRATION.md
+          - HashiCorp Vault migration: infrastructure/stacks/hashicorp/MIGRATION.md
+          - Nginx + PHP-FPM migration: infrastructure/stacks/nginx/MIGRATION.md
+      - Local AI eGPU Rig:
+          - Build log (3090 Ti bridge): infrastructure/eGPU/ai-rig-build-log.md
+          - ai-nuc eGPU build log & recovery: infrastructure/eGPU/ai-nuc-egpu-buildlog.md
+          - Oculink & Thunderbolt dual-mode setup: infrastructure/eGPU/oculink-thunderbolt-setup.md
+          - Thunderbolt eGPU troubleshooting guide: infrastructure/eGPU/thunderbolt-egpu-troubleshooting-guide.md
+          - Connection status report (2026-09-11): infrastructure/eGPU/connection-status-20260911.md
+          - Remote access setup: infrastructure/eGPU/remote-access-setup.md
   - Equipment:
       - Equipment List: equipment/index.md
       - AMD AI Dev/NAS PC Build Plan: equipment/build-plan.md
-      - eGPU 3090 Ti bridge: infrastructure/eGPU/ai-rig-build-log.md
   - Trading Bot:
       - ApexAlgo Evaluation & Architecture Plan: trading/apexalgo-evaluation.md
-  - Founder Resources:
+      - Product & Architecture Notes: product-architecture-notes.md
+  - Founder Notes:
       - Self-Employment & Disability Resources: resources/disability-entrepreneur-resources.md
+      - Documentation & build philosophy: response.md

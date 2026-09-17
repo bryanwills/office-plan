@@ -11,11 +11,16 @@ office-plan/
 ├── docs/                    # MkDocs source — this is what builds into the docs site
 │   ├── formation/           # entity/name decision, KY Articles of Organization, EIN, operating agreement
 │   ├── finance/             # annual compliance calendar, tax research notes
-│   ├── infrastructure/      # email/domain, netcup stacks, Hermes, eGPU, OpenJarvis direction
+│   ├── infrastructure/      # email/domain, VPS & hosting, netcup Docker stacks, eGPU rig, local AI tooling
+│   │   ├── eGPU/            # 3090 Ti eGPU build logs, Oculink/Thunderbolt setup, troubleshooting
+│   │   └── stacks/          # netcup Docker stack setup + per-service migration notes (Buzz, Vaultwarden, Vault, Nginx)
 │   ├── equipment/           # equipment list + the AMD AI Dev/NAS PC build plan
-│   └── resources/           # self-employment / disability entrepreneur resources
+│   ├── trading/             # ApexAlgo evaluation & architecture plan
+│   ├── resources/           # self-employment/disability resources, VPS migration concerns
+│   ├── stylesheets/         # furo-style.css — Furo-inspired look on top of Material for MkDocs
+│   └── product-architecture-notes.md, response.md  # standing product/architecture notes, doc philosophy
 ├── mkdocs.yml                # site config
-├── requirements.txt          # properdocs + mkdocs-material dependencies (pip-format, used by CI)
+├── requirements.txt          # properdocs + mkdocs-material + mkdocs-section-index dependencies (pip-format, used by CI)
 ├── .github/workflows/docs.yml  # builds docs/ and deploys to GitHub Pages via GitHub Actions on push to main
 └── pyproject.toml            # commitizen config (conventional commits)
 ```

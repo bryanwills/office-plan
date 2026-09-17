@@ -1,2 +1,3 @@
 properdocs
 mkdocs-material>=9.5
+mkdocs-section-index>=0.3

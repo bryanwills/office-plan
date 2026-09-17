@@ -194,7 +194,7 @@ sudo systemctl start hermes-gateway
 
 ## Ubuntu Desktop → Server Conversion
 
-See: [`ubuntu-desktop-to-server.md`](./ubuntu-desktop-to-server.md)
+See: [`ubuntu-desktop-to-server.md`](../ubuntu-desktop-to-server.md)
 
 ### Quick Summary
 ```bash
