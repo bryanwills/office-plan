@@ -1,6 +1,6 @@
-site_name: "[LLC NAME TBD] — Business Documentation"
+site_name: "Bryan Wills — Business Documentation"
 site_description: "Formation, compliance, infrastructure, and operating documentation"
-site_url: "https://docs.example.com"  # TODO: replace with your real docs subdomain once the name/domain is settled
+site_url: "https://docs.bryanwills.dev"
 
 # TODO: replace with your actual GitHub org/repo once this is pushed
 repo_url: "https://github.com/bryanwills/office-plan"

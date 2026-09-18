@@ -3,7 +3,7 @@
 This site is the running record of standing up the LLC — every decision, filing, account, and cost, documented as it happens so nothing has to be reconstructed from memory later.
 
 !!! note "Status"
-    Placeholder branding in place. Legal name, brand name, and domain are still being decided — see [Entity & Name Decision](formation/entity-decision.md). Swap `[LLC NAME TBD]` in `mkdocs.yml` and throughout these pages once settled.
+    Live at [docs.bryanwills.dev](https://docs.bryanwills.dev). Legal name, brand name, and company domain are still being decided — see [Entity & Name Decision](formation/entity-decision.md). The site name stays personal until that lands.
 
 ## Sections
 
@@ -17,6 +17,6 @@ This site is the running record of standing up the LLC — every decision, filin
 
 ## How this site is built
 
-- [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
-- Auto-deployed to GitHub Pages on every push to `main` via `.github/workflows/docs.yml`
-- Custom domain served via the `docs/CNAME` file — update it once the final domain is chosen
+- [ProperDocs](https://properdocs.org/) + [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
+- Built on the netcup VPS and served at `docs.bryanwills.dev` by nginx/Traefik
+- GitHub Actions workflow still builds Pages as a secondary copy (`.github/workflows/docs.yml`)
