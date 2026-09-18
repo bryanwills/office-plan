@@ -7,7 +7,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 STACK="${PAPERLESS_STACK:-/opt/stacks/paperless}"
-DATA="${PAPERLESS_DATA:-/mnt/ai-data/paperless}"
+DATA="${PAPERLESS_DATA:-/opt/stacks/paperless}"
 OVERLAY="${REPO_ROOT}/stacks/paperless"
 TS_IP="$(tailscale ip -4)"
 
@@ -34,10 +34,9 @@ if [[ ! -x "${PLUGIN}" ]] && ! docker compose version >/dev/null 2>&1; then
   chmod +x "${PLUGIN}"
 fi
 
-sudo mkdir -p "${STACK}" \
+mkdir -p "${STACK}" \
   "${DATA}/data" "${DATA}/media" "${DATA}/export" "${DATA}/consume" \
   "${DATA}/pgdata" "${DATA}/redis"
-sudo chown -R "$(id -u)":"$(id -g)" "${STACK}" "${DATA}"
 
 cp "${OVERLAY}/docker-compose.yml" "${STACK}/docker-compose.yml"
 
@@ -63,7 +62,7 @@ echo
 echo "Waiting for Paperless..."
 ok=0
 for i in $(seq 1 60); do
-  if curl -fsS --max-time 3 "http://${TS_IP}:8000/" >/dev/null 2>&1; then
+  if curl -fsS --max-time 3 "http://${TS_IP}:8010/" >/dev/null 2>&1; then
     ok=1
     break
   fi
@@ -72,12 +71,12 @@ done
 
 docker compose ps
 if [[ "${ok}" -eq 1 ]]; then
-  echo "Paperless is up at http://ai-nuc.taild5c0d3.ts.net:8000"
-  echo "Also: http://${TS_IP}:8000"
+  echo "Paperless is up at http://ai-nuc.taild5c0d3.ts.net:8010"
+  echo "Also: http://${TS_IP}:8010"
   echo "Drop files in ${DATA}/consume"
   echo "Admin user/password: ${STACK}/.env"
 else
-  echo "Did not respond on :8000 yet. Logs:" >&2
+  echo "Did not respond on :8010 yet. Logs:" >&2
   docker compose logs --tail 80 webserver || true
   exit 2
 fi

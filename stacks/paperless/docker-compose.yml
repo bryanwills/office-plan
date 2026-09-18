@@ -15,7 +15,7 @@ services:
     container_name: paperless-broker
     restart: unless-stopped
     volumes:
-      - /mnt/ai-data/paperless/redis:/data
+      - /opt/stacks/paperless/redis:/data
 
   db:
     image: docker.io/library/postgres:16
@@ -26,7 +26,7 @@ services:
       POSTGRES_USER: paperless
       POSTGRES_PASSWORD: ${PAPERLESS_DBPASS}
     volumes:
-      - /mnt/ai-data/paperless/pgdata:/var/lib/postgresql/data
+      - /opt/stacks/paperless/pgdata:/var/lib/postgresql/data
 
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
@@ -36,7 +36,7 @@ services:
       - db
       - broker
     ports:
-      - "100.73.71.29:8000:8000"
+      - "100.73.71.29:8010:8000"
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
@@ -44,10 +44,11 @@ services:
       PAPERLESS_DBUSER: paperless
       PAPERLESS_DBPASS: ${PAPERLESS_DBPASS}
       PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
-      PAPERLESS_URL: http://ai-nuc.taild5c0d3.ts.net:8000
+      PAPERLESS_BIND_ADDR: "0.0.0.0"
+      PAPERLESS_URL: http://ai-nuc.taild5c0d3.ts.net:8010
       PAPERLESS_ALLOWED_HOSTS: ai-nuc,ai-nuc.taild5c0d3.ts.net,100.73.71.29,localhost
-      PAPERLESS_CORS_ALLOWED_HOSTS: http://ai-nuc.taild5c0d3.ts.net:8000,http://100.73.71.29:8000,http://ai-nuc:8000
-      PAPERLESS_CSRF_TRUSTED_ORIGINS: http://ai-nuc.taild5c0d3.ts.net:8000,http://100.73.71.29:8000,http://ai-nuc:8000
+      PAPERLESS_CORS_ALLOWED_HOSTS: http://ai-nuc.taild5c0d3.ts.net:8010,http://100.73.71.29:8010,http://ai-nuc:8010
+      PAPERLESS_CSRF_TRUSTED_ORIGINS: http://ai-nuc.taild5c0d3.ts.net:8010,http://100.73.71.29:8010,http://ai-nuc:8010
       PAPERLESS_TIME_ZONE: America/New_York
       PAPERLESS_OCR_LANGUAGE: eng
       PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER:-bryan}
@@ -57,7 +58,7 @@ services:
       USERMAP_UID: ${PAPERLESS_UID:-1000}
       USERMAP_GID: ${PAPERLESS_GID:-1000}
     volumes:
-      - /mnt/ai-data/paperless/data:/usr/src/paperless/data
-      - /mnt/ai-data/paperless/media:/usr/src/paperless/media
-      - /mnt/ai-data/paperless/export:/usr/src/paperless/export
-      - /mnt/ai-data/paperless/consume:/usr/src/paperless/consume
+      - /opt/stacks/paperless/data:/usr/src/paperless/data
+      - /opt/stacks/paperless/media:/usr/src/paperless/media
+      - /opt/stacks/paperless/export:/usr/src/paperless/export
+      - /opt/stacks/paperless/consume:/usr/src/paperless/consume
