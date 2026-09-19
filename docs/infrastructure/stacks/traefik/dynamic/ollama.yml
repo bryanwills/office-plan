@@ -1,0 +1,44 @@
+# File location on the netcup VPS: /opt/stacks/traefik/dynamic/ollama.yml
+#
+# Public name: https://ollama.bryanwills.org  (no port)
+# TLS on netcup Traefik. Backend is the NUC over Tailscale, not the home WAN.
+#
+# DNS (Squarespace, bryanwills.org zone):
+#   A    ollama    152.53.82.233
+# Do NOT point this name at the AT&T home IP. Do NOT CNAME it to *.ts.net.
+#
+# Copy this file onto gateway, then Traefik's file provider picks it up.
+# The gateway on ai-nuc must be up first (stacks/ollama-gateway).
+
+http:
+  routers:
+    ollama-http:
+      rule: "Host(`ollama.bryanwills.org`)"
+      entryPoints:
+        - web
+      middlewares:
+        - ollama-https-redirect
+      service: ollama
+
+    ollama-secure:
+      rule: "Host(`ollama.bryanwills.org`)"
+      entryPoints:
+        - websecure
+      service: ollama
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    ollama-https-redirect:
+      redirectScheme:
+        scheme: https
+
+  services:
+    ollama:
+      loadBalancer:
+        servers:
+          - url: "http://100.73.71.29:8088"
+        healthCheck:
+          path: /healthz
+          interval: "10s"
+          timeout: "3s"

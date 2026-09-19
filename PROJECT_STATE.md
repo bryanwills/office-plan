@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-13 afternoon (Cursor on ai-nuc — Mac Honcho pointer is done: tracked file is `~/.config/.honcho/config.json` with `~/.honcho` as the Hermes lookup symlink. NUC Honcho still healthy. Buzz stays a separate Mac window. Read §4f and §5a-now before assuming NUC state.)
+Last updated: 2026-09-18 (Cursor on ai-nuc — `ollama.bryanwills.org` A record now resolves to netcup `152.53.82.233`, not the AT&T house IP. Why: Squarespace is the phone book; Netcup is the public :443 receptionist; Tailscale is the private line to the NUC. Still need Traefik `ollama.yml` copied onto gateway. Full "why this IP" writeup: `docs/infrastructure/ollama-public-https.md`.)
 
 ---
 
@@ -178,7 +178,7 @@ per §4b) — ask rather than assume.
 | Domain | Registrar | Status |
 |---|---|---|
 | bryanwills.dev | Squarespace, ~$12/yr | Currently → Little Creek (38.45.65.66). **Migrating A record to netcup (152.53.82.233).** Google Workspace email active via Name.com. |
-| bryanwills.org | Squarespace, ~$12/yr | Points to AT&T home IP, no active server, available for reuse |
+| bryanwills.org | Squarespace, ~$12/yr | Apex still AT&T `99.125.236.29`. **Done 2026-09-18:** `ollama.bryanwills.org` A → netcup `152.53.82.233`. Why that IP: Squarespace is the phone book; Netcup terminates public :443; Tailscale is the private hop to the NUC. See `docs/infrastructure/ollama-public-https.md`. |
 | bigbraincoding.com | Namecheap, expires 2027-06-16 | Active |
 | bryanwills.xyz/.io/.net/.tech | — | Previously owned, expired |
 

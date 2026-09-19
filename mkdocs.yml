@@ -81,6 +81,7 @@ nav:
       - Cloud Credits & Startup Programs: infrastructure/cloud-credits.md
       - Documentation Tooling Risk: infrastructure/docs-tooling.md
       - Tokens, context, and picking a model: infrastructure/tokens-context-and-picking-a-model.md
+      - Ollama HTTPS (ollama.bryanwills.org): infrastructure/ollama-public-https.md
       - OpenJarvis command center: infrastructure/openjarvis-command-center.md
       - Cursor IDE — Local Ollama config: infrastructure/cursor-local-ollama-setup.md
       - Claude Code on Ubuntu setup: infrastructure/claude-code-ubuntu-setup.md

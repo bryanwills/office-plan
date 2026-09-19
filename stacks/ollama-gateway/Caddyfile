@@ -1,0 +1,18 @@
+{
+	auto_https off
+}
+
+:8088 {
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	@authed header Authorization "Bearer {$OLLAMA_PUBLIC_KEY}"
+	handle @authed {
+		reverse_proxy host.docker.internal:11434
+	}
+
+	handle {
+		respond "unauthorized" 401
+	}
+}

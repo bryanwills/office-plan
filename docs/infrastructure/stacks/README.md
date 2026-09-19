@@ -19,6 +19,7 @@ Real secrets live in server-side `.env` files only. This repo may contain
 | Vaultwarden | Bitwarden-compatible vault | [MIGRATION](vaultwarden/MIGRATION.md) |
 | Hashicorp Vault | secrets engine (`keys.bryanwills.dev`) | [MIGRATION](hashicorp/MIGRATION.md) |
 | Buzz | agentic workspace (`buzz.bryanwills.dev`) | [SETUP](buzz/SETUP.md) |
+| Ollama HTTPS | `ollama.bryanwills.org` → Tailscale NUC | [dynamic/ollama.yml](traefik/dynamic/ollama.yml), [guide](../ollama-public-https.md) |
 
 Little Creek decommission timing for the stacks that already cut over is
 **not decided**. Ask before deleting anything there.
