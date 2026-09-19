@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-18 (Cursor on ai-nuc — `ollama.bryanwills.org` A record now resolves to netcup `152.53.82.233`, not the AT&T house IP. Why: Squarespace is the phone book; Netcup is the public :443 receptionist; Tailscale is the private line to the NUC. Still need Traefik `ollama.yml` copied onto gateway. Full "why this IP" writeup: `docs/infrastructure/ollama-public-https.md`.)
+Last updated: 2026-09-18 night (Cursor on ai-nuc — Ollama HTTPS last mile is the Traefik file on netcup. DNS and the NUC bearer gateway are done. Public name still shows Traefik's default cert / 404. Apply from the Mac: `scripts/macbook/apply-ollama-traefik.sh`. This NUC has no SSH key to gateway. Paperless is already running on Tailscale `:8010`. Read `docs/infrastructure/ollama-public-https.md`.)
 
 ---
 
@@ -252,6 +252,7 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
 14. ~~**Honcho on the NUC + Mac pointer**~~ — **running 2026-09-13.** NUC API healthy. Mac uses `~/.config/.honcho/config.json` (dotfiles) plus `~/.honcho` symlink. OpenWebUI Traefik template still not applied. Next NUC stack work: migrate OpenWebUI to `/opt/stacks/open-webui` and turn on tools/PDF/MCP.
+16. **Ollama HTTPS last mile** — DNS + NUC bearer gateway done. From the Mac: `bash scripts/macbook/apply-ollama-traefik.sh` so Let's Encrypt can replace Traefik's default cert. Then Open Interpreter uses `https://ollama.bryanwills.org/v1` plus the key in `/opt/stacks/ollama-gateway/.env`.
 15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---

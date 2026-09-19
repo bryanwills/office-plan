@@ -1,6 +1,6 @@
 # HTTPS name for Ollama: ollama.bryanwills.org
 
-**Status:** DNS is live. `dig +short ollama.bryanwills.org` returns `152.53.82.233` (netcup) as of 2026-09-18. NUC gateway is healthy on Tailscale `:8088`. Public TLS still needs the Traefik file copied onto `gateway`.  
+**Status:** DNS live (`ollama.bryanwills.org` → `152.53.82.233`). NUC Caddy gateway healthy on Tailscale `:8088`. Public HTTPS is **not** finished: Traefik answers with `CN=TRAEFIK DEFAULT CERT` and HTTP 404 until `ollama.yml` is on netcup.  
 **Date:** 2026-09-18
 
 ## You were slightly wrong about `.dev`, and `.org` is still the right name
@@ -118,19 +118,21 @@ export OPENAI_API_KEY='<same key as OLLAMA_PUBLIC_KEY>'
 |---|---|---|---|
 | A | `ollama` | `152.53.82.233` | `dig +short` returns this IP |
 
-## What you do on netcup (`gateway`)
+## What you do on netcup (`gateway`) — last step
+
+ai-nuc has no SSH private key and Tailscale SSH to `gateway` waits on an interactive check. Run this **from the MacBook**:
 
 ```bash
-# from this repo, after pull
-sudo cp docs/infrastructure/stacks/traefik/dynamic/ollama.yml \
-  /opt/stacks/traefik/dynamic/ollama.yml
-# file provider watch=true — should pick up without restart
-# if not: docker compose -f /opt/stacks/traefik/docker-compose.yml exec traefik kill -s USR1 1
+cd /path/to/office-plan
+git pull
+bash scripts/macbook/apply-ollama-traefik.sh
 ```
 
-Confirm the cert resolver name is still `letsencrypt` (it is, in the checked-in Traefik compose).
+That copies `docs/infrastructure/stacks/traefik/dynamic/ollama.yml` to `/opt/stacks/traefik/dynamic/ollama.yml` on netcup. Traefik's file provider has `watch=true`. Let's Encrypt uses TLS-ALPN on `:443` (same as the rest of this host).
 
-This session could not SSH to `gateway` (host key verification failed from ai-nuc). Copy the file from a machine that already has that host key (Mac).
+Until that file lands, `https://ollama.bryanwills.org` presents Traefik's default self-signed cert and 404s. That is expected: DNS and the public IP are correct; the router is missing.
+
+Confirm the cert resolver name is still `letsencrypt` (it is, in the checked-in Traefik compose).
 
 ## What is already on ai-nuc
 
