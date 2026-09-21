@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-20 (Cursor on ai-nuc — Open WebUI bound to 127.0.0.1 + Tailscale :3000 only. Mac `owui-tunnel` LaunchAgent start/stop. Mac file-hygiene process is Hermes-on-Mac + Open WebUI Knowledge, not an NUC filesystem tool. Claude export is not a one-click Open WebUI import. See §8 and `docs/infrastructure/mac-file-hygiene.md`. Do not install the “40 things” list.)
+Last updated: 2026-09-20 night (Cursor on ai-nuc — hygiene apply script for Hermes MOVE batches; SECRET stays Bryan→~/.keys. TSV/inventory gitignored. Honcho JWT mint script. Capture spine doc.)
 
 ---
 
@@ -320,3 +320,5 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 - **SearXNG** — already on the NUC; use per-chat, off for Ring/customer data
 - **Paperless** — already on Tailscale `:8010` for on-prem docs
 - **Drive picker “My Drive root only”** — optional after Ring `setParent`
+- **Capture spine** — one inbox, Obsidian as the only human vault, Honcho for Hermes facts, n8n later for Plaud. Doc: `docs/infrastructure/capture-and-build-spine.md`
+- **Grok as a Hermes provider** — later, via official xAI OAuth. Not a second gateway. Not this week.

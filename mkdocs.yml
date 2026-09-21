@@ -88,6 +88,7 @@ nav:
       - Self-hosted Honcho on ai-nuc: infrastructure/honcho-ai-nuc-setup.md
       - Open WebUI Mac tunnel (start/stop): infrastructure/openwebui-mac-tunnel.md
       - Mac file hygiene (Open WebUI + Hermes): infrastructure/mac-file-hygiene.md
+      - Capture and build spine: infrastructure/capture-and-build-spine.md
       - Open WebUI Google Drive: infrastructure/openwebui-google-drive.md
       - SearXNG on ai-nuc: infrastructure/searxng-ai-nuc.md
       - AI-NUC to gateway SSH: infrastructure/ai-nuc-to-gateway-ssh.md

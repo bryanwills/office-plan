@@ -21,15 +21,13 @@ import his owner identity.
   derivation — Nostr pubkeys are x-only, not a plain random value) and set
   as the closed-relay owner.
 - **The corresponding private key is NOT stored on the server or in this
-  repo.** It's in `~/buzz-owner-nsec-DELETE-AFTER-IMPORT.txt` on Bryan's
-  Mac. Bryan needs to:
+  repo.** Keep the nsec in `~/.keys/` on the Mac. Then:
   1. Install the Buzz desktop app (prebuilt, no local build needed):
      `Buzz_0.5.20_aarch64.dmg` from
      `github.com/block/buzz/releases/tag/desktop-v0.5.20` (Apple Silicon).
   2. Point it at `wss://buzz.bryanwills.dev`.
-  3. Import the private key from that file as the identity.
-  4. Delete the file once imported — it's a bearer secret for the owner
-     identity, don't leave it sitting around.
+  3. Import the private key from `~/.keys/`.
+  4. Delete any leftover nsec sitting in `$HOME`. It is a bearer secret.
 
 ## Routing / security fix applied
 Buzz's own compose bundle publishes the relay on host port 3000 by default
