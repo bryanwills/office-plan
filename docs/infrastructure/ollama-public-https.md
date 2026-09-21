@@ -1,7 +1,7 @@
 # HTTPS name for Ollama: ollama.bryanwills.org
 
-**Status:** DNS live (`ollama.bryanwills.org` → `152.53.82.233`). NUC Caddy gateway healthy on Tailscale `:8088`. Public HTTPS is **not** finished: Traefik answers with `CN=TRAEFIK DEFAULT CERT` and HTTP 404 until `ollama.yml` is on netcup.  
-**Date:** 2026-09-18
+**Status:** Live. `ollama.yml` is on netcup. Let's Encrypt `CN=ollama.bryanwills.org` (issuer YR1). `curl https://ollama.bryanwills.org/healthz` returns `ok`. Do not restart Traefik for this.  
+**Date:** 2026-09-19
 
 ## You were slightly wrong about `.dev`, and `.org` is still the right name
 
@@ -107,8 +107,34 @@ Open Interpreter / OpenAI-compatible apps:
 ```bash
 export OPENAI_BASE_URL=https://ollama.bryanwills.org/v1
 export OPENAI_API_KEY='<same key as OLLAMA_PUBLIC_KEY>'
-# model name, e.g. qwen3.8:27b
+# model name, e.g. qwen3.8:27b-hermes
 ```
+
+## Open WebUI desktop on the Mac (two different boxes)
+
+The desktop app has **two** connection types. The API key only exists on the OpenAI one.
+
+| What you want | Where in the app | URL | Key |
+|---|---|---|---|
+| Home / Tailscale | Admin → Connections → **Ollama API** | `http://100.73.71.29:11434` | none (Ollama has no key field) |
+| Off-tailnet, like OpenAI | Admin → Connections → **OpenAI API** (the `+`) | `https://ollama.bryanwills.org/v1` | `OLLAMA_PUBLIC_KEY` from `/opt/stacks/ollama-gateway/.env` |
+
+Putting the domain in the Ollama box will 401. That connector does not send `Authorization: Bearer`.
+
+Easier ChatGPT-style UI: skip a second app and open the NUC's own Open WebUI at `http://100.73.71.29:3000` while Tailscale is up.
+
+## LAN IP and Tailscale at the same time
+
+Yes, if the Mac does **not** accept subnet routes. `ai-pi` advertises `172.16.1.0/24`. When the Mac "enables routes from peers," `172.16.1.232` is sent through the Pi instead of wifi, so the NUC LAN address dies.
+
+On the Mac Tailscale app: turn **off** "Use Tailscale subnets" / accept-routes. Then both work:
+
+- `100.73.71.29` via Tailscale
+- `172.16.1.232` via wifi
+
+Do not advertise `172.16.1.0/24` from ai-nuc. Do not port-forward `11434` or `3000` on the AT&T BGW. Those WAN ports being open on `99.125.236.29` is a leftover from the old public-IP test (`docs/infrastructure/eGPU/remote-access-setup.md`). Public 443 for Ollama is **netcup**, not the house. House `:443` closed is correct.
+
+Netcup Tailscale must be running or the domain returns Traefik `503 no available server`. If that happens: `ssh gateway-public` then `tailscale up`.
 
 ## Squarespace (bryanwills.org zone)
 
@@ -118,21 +144,13 @@ export OPENAI_API_KEY='<same key as OLLAMA_PUBLIC_KEY>'
 |---|---|---|---|
 | A | `ollama` | `152.53.82.233` | `dig +short` returns this IP |
 
-## What you do on netcup (`gateway`) — last step
+## What you do on netcup (`gateway`) — done 2026-09-19
 
-ai-nuc has no SSH private key and Tailscale SSH to `gateway` waits on an interactive check. Run this **from the MacBook**:
+`/opt/stacks/traefik/dynamic/ollama.yml` is on gateway. File provider `watch=true` picked it up. No Traefik restart.
 
-```bash
-cd /path/to/office-plan
-git pull
-bash scripts/macbook/apply-ollama-traefik.sh
-```
+NUC → gateway SSH now exists (`~/.ssh/id_ed25519_gateway`, comment `bryan@ai-nuc-to-gateway`). See [ai-nuc-to-gateway-ssh.md](ai-nuc-to-gateway-ssh.md).
 
-That copies `docs/infrastructure/stacks/traefik/dynamic/ollama.yml` to `/opt/stacks/traefik/dynamic/ollama.yml` on netcup. Traefik's file provider has `watch=true`. Let's Encrypt uses TLS-ALPN on `:443` (same as the rest of this host).
-
-Until that file lands, `https://ollama.bryanwills.org` presents Traefik's default self-signed cert and 404s. That is expected: DNS and the public IP are correct; the router is missing.
-
-Confirm the cert resolver name is still `letsencrypt` (it is, in the checked-in Traefik compose).
+A browser on `https://ollama.bryanwills.org/` is **not** a site. With no `Authorization: Bearer` header, Caddy returns plain `unauthorized` (401). That is correct. Only `/healthz` is open. Visiting the raw IP `https://152.53.82.233` still shows `CN=TRAEFIK DEFAULT CERT` (no SNI). Close any tab that saw yesterday's default cert and open a new one.
 
 ## What is already on ai-nuc
 
