@@ -1,8 +1,8 @@
-# Open WebUI Stack for ai-nuc
-# Deploy to: /opt/stacks/open-webui/
-# Connects to local Ollama at host.docker.internal:11434
-
-version: '3.8'
+# Open WebUI on ai-nuc.
+# Runtime: /opt/stacks/open-webui
+# Keeps the existing Docker volume `open-webui` (chats/settings stay put).
+# Google Drive picker: set ENABLE + CLIENT_ID + API_KEY in .env, then
+# Admin → Settings → Documents → Google Drive.
 
 services:
   open-webui:
@@ -10,14 +10,24 @@ services:
     container_name: open-webui
     restart: unless-stopped
     ports:
-      - "3000:8080"
+      - "127.0.0.1:3000:8080"
+      - "100.73.71.29:3000:8080"
     volumes:
-      - ./data:/app/backend/data
+      - open-webui:/app/backend/data
+      # Folder + image Drive picker. Re-run scripts/ai-nuc/patch-openwebui-drive-picker.sh after an image pull.
+      - ./patches/CS9gMiwt.js:/app/build/_app/immutable/chunks/CS9gMiwt.js:ro
     environment:
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - WEBUI_AUTH=true
-      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-changeme}
-      - ENV=prod
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      WEBUI_AUTH: "true"
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-changeme}
+      ENABLE_GOOGLE_DRIVE_INTEGRATION: ${ENABLE_GOOGLE_DRIVE_INTEGRATION:-false}
+      GOOGLE_DRIVE_CLIENT_ID: ${GOOGLE_DRIVE_CLIENT_ID:-}
+      GOOGLE_DRIVE_API_KEY: ${GOOGLE_DRIVE_API_KEY:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3000}
+      ENABLE_WEB_SEARCH: ${ENABLE_WEB_SEARCH:-true}
+      WEB_SEARCH_ENGINE: ${WEB_SEARCH_ENGINE:-searxng}
+      SEARXNG_QUERY_URL: ${SEARXNG_QUERY_URL:-http://host.docker.internal:8888/search?q=<query>}
+      WEB_SEARCH_RESULT_COUNT: ${WEB_SEARCH_RESULT_COUNT:-5}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -26,7 +36,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
+
+volumes:
+  open-webui:
+    external: true
+    name: open-webui
