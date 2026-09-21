@@ -73,7 +73,10 @@ echo "read-only inventory of ${HOME_DIR} -> ${OUT}"
     du -sh "${HOME_DIR}"/* 2>/dev/null | sort -h || true
   fi
   echo
-  echo "## Per-folder file counts (depth 2, capped)"
+  echo "## Immediate children (why the top-level list looks empty)"
+  echo "Hidden folders (dotfiles) are not listed. Files live *inside*"
+  echo "Desktop/Documents/Downloads, not as extra top-level names."
+  echo
   for dir in Desktop Documents Downloads Pictures Movies Music Public; do
     target="${HOME_DIR}/${dir}"
     if [[ ! -d "${target}" ]]; then
@@ -82,8 +85,11 @@ echo "read-only inventory of ${HOME_DIR} -> ${OUT}"
     fi
     set +o pipefail
     count="$(find "${target}" -xdev -type f 2>/dev/null | head -n 5001 | wc -l | tr -d ' ')"
+    kids="$(find "${target}" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')"
     set -o pipefail
-    echo "${dir}: ${count} files (count stops at 5001)"
+    echo "${dir}: ${kids} immediate items, ${count} files under it (count stops at 5001)"
+    find "${target}" -mindepth 1 -maxdepth 1 -printf '    %y %f\n' 2>/dev/null \
+      | head -n 40 || ls -1 "${target}" 2>/dev/null | head -n 40 | sed 's/^/    /'
     echo "  largest (depth 2):"
     du -h -d 2 "${target}" 2>/dev/null | sort -h | tail -n 8 | sed 's/^/    /' || true
     echo

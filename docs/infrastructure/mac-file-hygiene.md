@@ -49,51 +49,43 @@ Do **not** add for this project:
 
 ```bash
 bash scripts/macbook/mac-file-inventory.sh
+bash scripts/macbook/mac-file-hygiene-plan.sh
 ```
 
-Default report: `~/Desktop/mac-file-inventory-YYYYMMDD.txt`. It lists sizes and counts. It skips `Library`, Trash, Time Machine locals, Photos library internals, `~/.ollama`, `~/.hermes`.
+The inventory only looks at the usual user folders. It does **not** list dotfiles, so the report can look “empty” even when `~/Library` is huge. That is on purpose.
 
-Upload that file to Open WebUI: **Workspace → Knowledge → New** (name it `mac-hygiene-2026-09`). That is the map the model should talk about. Not a live mount.
+The **plan** script is a dry-run of the **whole user folder**. It writes a TSV (`SECRET` / `MOVE` / `SKIP`) and **refuses `--execute`**.
 
-### 2. Import Claude “memory” the honest way
+- **SECRET** → you copy into `~/.keys/` (PEMs, nsec dumps, `*.bryanwills.dev` key files, Claude config backups). Then `export-keys-to-vault.sh` later. Hermes never moves these.
+- **MOVE** → `Documents/inbox/...`, except tax/W-2/billing/contracts → `Documents/llc/records/`
+- **SKIP** → dotfiles, `Library`, Applications, git repos, Photos / Photo Booth, iCloud MacBook copies, Movies/TV, Resolve, CyberLink, Drop Box, installers, plus names in `scripts/macbook/hygiene-force-skip.txt`
 
-[Open WebUI Import / Export](https://github.com/open-webui/docs/blob/main/docs/features/chat-conversations/data-controls/import-export.md) auto-converts **ChatGPT** exports. It does **not** auto-convert Claude. A Claude zip is custom JSON; you reshape it, or you treat the export as documents.
+Do **not** commit the TSV or inventory. They list personal filenames. `.gitignore` covers `mac-file-hygiene-plan-*.tsv` and `mac-file-inventory-*.txt`. Do not upload the raw TSV to Open WebUI Knowledge.
 
-Do both of these, they are different:
+### 2. You move secrets (not Hermes)
 
-**A. Knowledge (what you actually need for hygiene)**  
-Claude.ai → Settings → Privacy → Export data. Unzip on the Mac. In Open WebUI: **Workspace → Knowledge** → upload `conversations.json` plus any `projects/*.json` docs you care about. That is searchable context: “what did I tell Claude about Downloads / taxes / photos.”
+Copy every TSV `SECRET` row into `~/.keys/` yourself. Keep the filenames. Do not put `~/.keys` in git. Vault ingest is later (`~/export-keys-to-vault.sh`). Unseal Hashicorp yourself.
 
-Claude **Projects** are not chats. Rebuild a project as a Knowledge collection + a custom model with that project’s instructions pasted into the system prompt. The export does not keep project-to-chat links ([Jonathan Mann writeup](https://jonathanmann.tech/blog/migrate-claude-projects-open-webui/)).
+False positives already in `hygiene-force-skip.txt`: D&D `*tokens*` libraries, Password Safe `.deb`s, LAPS folders. SSH files named like `*macbook-pro` are keys, not iCloud copies — if the TSV SKIP’d them, copy those into `~/.keys/` by hand.
 
-**B. Chat history (optional, vanity / search in the sidebar)**  
-Convert Claude JSON to Open WebUI’s message-tree, then **Settings → Data Controls → Import Chats**. Community converter: [yetanotherchris/openwebui-importer](https://github.com/yetanotherchris/openwebui-importer) `convert_claude.py`. Re-importing the same file duplicates chats.
+### 3. Hermes applies MOVE rows
 
-Do **not** also pour that zip into Honcho in the same weekend unless you decide Hermes should recall it. Two copies = split brain. Default for this project: Open WebUI Knowledge only.
+Give Hermes `scripts/macbook/HERMES-HYGIENE.md`. One `--batch` per new session:
 
-### 3. Plan in Open WebUI (still no moves)
+```bash
+bash scripts/macbook/mac-file-hygiene-apply.sh --plan ~/Desktop/mac-file-hygiene-plan-YYYYMMDD.tsv
+bash scripts/macbook/mac-file-hygiene-apply.sh --plan ~/Desktop/mac-file-hygiene-plan-YYYYMMDD.tsv --execute --batch home
+```
 
-New chat, attach the `mac-hygiene-2026-09` knowledge. Ask for a **folder-by-folder plan**, not a whole-disk rewrite. Hard rules to paste:
+Batches, in order: `home` → `desktop` → `documents` → `llc` → `movies` → `downloads`. Dry-run must look right before `--execute`. No `rm`. No overwrite. No secrets batch.
 
-- Do not touch `~/Library`, hidden top-level dirs, Time Machine, Photos `.photoslibrary` internals, `~/.ssh`, password managers, `~/.ollama`, `~/.hermes`
-- Propose `mkdir` + `mv` lists only. No `rm -rf`
-- One top-level folder per plan (Downloads, then Desktop, then Documents)
-- Call out iCloud / Desktop-and-Documents sync if those folders are cloud-backed
-- Customer / address / Ring material stays local; no web search
+### 4. After a batch
 
-You approve the list. The model does not execute from this chat.
+Spot-check in Finder. Optionally start Time Machine. Next Hermes session, next `--batch`. When Downloads is drained, Paperless (`:8010`) for keepers. Ring photos stay in the Drive picker. Do not give Open WebUI a full-disk mount.
 
-### 4. Execute with Hermes on the Mac
+### 5. Optional Claude export (Knowledge, not Honcho)
 
-New Hermes session. Paste **one** approved folder plan. Require confirmation before each batch. If the session gets weird, start another ([Hermes 500 / context](hermes-ollama-500-fix.md)).
-
-After each folder: spot-check in Finder, then optionally start Time Machine again so you have a clean post-tidy snapshot.
-
-### 5. Afterward
-
-- PDFs you want archived → Paperless, not a random `Documents/archive` forever
-- Ring / property photos stay in the Drive picker flow ([Google Drive](openwebui-google-drive.md)), not a second copy on the NUC unless you choose it
-- Do not enable Open WebUI “full disk” tools later “to make this faster”
+ChatGPT zips import in Open WebUI Data Controls. Claude zips do not; treat them as Knowledge documents or convert first. Do not dump the same export into Honcho unless Hermes should own it.
 
 ## Suggested folder spine (change if you already have one)
 
