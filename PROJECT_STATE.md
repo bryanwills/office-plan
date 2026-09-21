@@ -4,7 +4,7 @@
 
 **Convention:** Whichever tool/agent touches this project last updates this file before ending its session. Keep entries factual and dated. Don't delete history, mark it superseded instead. This is a state file, not a knowledge base, keep it lean; deep detail belongs in the docs/ folder or the relevant repo.
 
-Last updated: 2026-09-18 night (Cursor on ai-nuc — Ollama HTTPS last mile is the Traefik file on netcup. DNS and the NUC bearer gateway are done. Public name still shows Traefik's default cert / 404. Apply from the Mac: `scripts/macbook/apply-ollama-traefik.sh`. This NUC has no SSH key to gateway. Paperless is already running on Tailscale `:8010`. Read `docs/infrastructure/ollama-public-https.md`.)
+Last updated: 2026-09-20 (Cursor on ai-nuc — Open WebUI bound to 127.0.0.1 + Tailscale :3000 only. Mac `owui-tunnel` LaunchAgent start/stop. Mac file-hygiene process is Hermes-on-Mac + Open WebUI Knowledge, not an NUC filesystem tool. Claude export is not a one-click Open WebUI import. See §8 and `docs/infrastructure/mac-file-hygiene.md`. Do not install the “40 things” list.)
 
 ---
 
@@ -252,7 +252,8 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 12. **Credit report / financial** — evaluating whether to resume Norcross Consulting ($109/mo credit repair) or handle differently now that mental-health-related accommodations may apply; looking for a financial advisor experienced with neurodivergent clients (investments, LLC/business finances, CPA help, eventual return to active day trading).
 13. **Local ND community** — Bryan is making more contacts locally. Keep the product honest enough to show them; do not oversell a HUD that does not run yet.
 14. ~~**Honcho on the NUC + Mac pointer**~~ — **running 2026-09-13.** NUC API healthy. Mac uses `~/.config/.honcho/config.json` (dotfiles) plus `~/.honcho` symlink. OpenWebUI Traefik template still not applied. Next NUC stack work: migrate OpenWebUI to `/opt/stacks/open-webui` and turn on tools/PDF/MCP.
-16. **Ollama HTTPS last mile** — DNS + NUC bearer gateway done. From the Mac: `bash scripts/macbook/apply-ollama-traefik.sh` so Let's Encrypt can replace Traefik's default cert. Then Open Interpreter uses `https://ollama.bryanwills.org/v1` plus the key in `/opt/stacks/ollama-gateway/.env`.
+16. ~~**Ollama HTTPS last mile**~~ — **done 2026-09-19.** Cert live. Browser `/` = `unauthorized` is the bearer gate, not a broken cert. Clients: `https://ollama.bryanwills.org/v1` + key in `/opt/stacks/ollama-gateway/.env`. No home WAN port-forward.
+17. **Graylog / central syslog (soon)** — not on netcup. littlecreek used to run `graylog-server` + `rsyslog-server`. AT&T BGW syslog page is **Off**. Do not point that page at the public netcup IP on UDP 514 (cleartext across the WAN). After 8311 / or on the tailnet, stand Graylog up as `/opt/stacks/graylog`. Do not factory-reset the BGW to clean duplicate `ai-nuc` DHCP names.
 15. **AI-NUC file transfer + local RAG ingest** — ~~done~~ 2026-09-12, see §4f and `docs/infrastructure/ai-nuc-smb-mount.md`. Nothing further needed unless it breaks or the embed hook needs to move to a heavier store.
 
 ---
@@ -266,3 +267,56 @@ Hostname on the box itself: system hostname `gateway`, FQDN `gateway.bryanwills.
 - Whether Norcross Consulting services are still needed
 - Exact scope/timeline for the "someone else handles the deferment call" plan
 - Server EOL audit toolkit, homepage dashboard recurring blank-grid issue, WSL2 environment — tracked in their own areas, not detailed here to keep this file lean
+- **One** coding-agent board later: Multica **or** Beads **or** Vibe Kanban. Do not run all three. Default lean: Multica (Bryan asked 2026-09-19) as the Jira-shaped layer; Beads only if he wants a git-local graph instead of a UI.
+
+---
+
+## 8. Later tooling (from the “40 things to install in Claude” list + extras)
+
+**Not standing any of this up now.** Hermes stays the gateway. Honcho stays Hermes memory. Buzz stays product channels. Open WebUI + Ollama stay the local chat desk. Karpathy did not build Multica.
+
+### Do later (fits the LLC / office-plan work)
+
+| Item | Why it fits | Where it would live |
+|---|---|---|
+| **Multica** (`multica-ai/multica`) | Jira-shaped board: assign MealForge / LinguaBridge / OpenJarvis / trading issues to Cursor or Claude Code, review diffs. **Not a Buzz replacement.** | Container later, Mac or NUC daemon, `/opt/stacks/multica` if on the NUC |
+| **Beads** (`bd`) | Already flagged in §4e. Git-local task graph for agents. Pick this **or** Multica, not both as “the board.” | CLI on Mac; optional in product repos |
+| **Context7** | Current library docs while coding Next/Supabase/LiveKit (LinguaBridge, MealForge) | Cursor MCP (may already be available via plugins) |
+| **Playwright MCP** | Click-test the web apps the way a user would (user rule already wants this) | Mac; later CI |
+| **Firecrawl** | Blog, recipe/docs ingest, competitor pages. **Already in Cursor plugins** — do not install a second copy | Keep the existing MCP |
+| **Repomix** | Pack a repo for the local 27B / LVS rewrite when GitHub Enterprise tokens are tight | Mac CLI, ad hoc |
+| **Karpathy-inspired skills** | Four rules (think, simple, surgical, tests). Cheap Cursor rule, not a stack | `.cursor/rules` if Bryan wants it |
+| **ui-ux-pro-max / addyosmani-skills / taste-skill** | MealForge + LinguaBridge UI quality | Skills on the Mac when those apps are in active UI work |
+| **Headroom / Caveman** | Shrink tool output / replies. Helps the **work token-cap** problem and local `num_ctx` | Evaluate for the LVS presentation path, not for customer-data apps |
+| **Serena** | LSP jump-to-symbol on a huge LVS / office-plan tree | Only if the repo is too big for grep |
+| **GitHub MCP** | Claude Code talking to issues/PRs. `gh` already covers Bryan on the CLI | Only if Claude Code at work needs it |
+| **Pin Open WebUI Drive `setParent` to the Ring folder** | Easier nav for the property/camera exercise | NUC picker patch, when he asks |
+| **`owui-tunnel` LaunchAgent** | `start` / `stop` for `localhost:3000` without a leftover Terminal. Drive OAuth still needs this. Daily chat can stay on Tailscale. | Mac: `scripts/macbook/owui-tunnel.sh` → `~/bin/owui-tunnel` |
+| **Mac file inventory (read-only)** | Size/count map before any tidy. Safe during Time Machine. Upload to Open WebUI Knowledge. | `scripts/macbook/mac-file-inventory.sh` |
+| **Hermes filesystem / terminal on the Mac** | The only agent that should `mv` Mac files. Open WebUI tools see the NUC disk. | Already on the laptop; new session per folder |
+| **Open WebUI Knowledge (Claude/ChatGPT export)** | Hygiene context: “what did I tell Claude about these folders.” ChatGPT zip imports; Claude zip does not auto-convert. | NUC Open WebUI Workspace → Knowledge |
+| **Open WebUI Data Controls → Import Chats** | Optional sidebar history after a Claude→OWUI converter. Re-import duplicates. | Only after Knowledge is done |
+| **Paperless** | Archive PDFs *after* you pick keepers | Already on Tailscale `:8010` |
+
+### Skip or already owned (do not stack)
+
+| Item | Why skip |
+|---|---|
+| claude-mem, agentmemory, graphify/codegraph as a second brain | **Honcho** owns Hermes memory. **PROJECT_STATE** owns cross-tool continuity. A second injector = split brain |
+| Vibe Kanban, Archon, gstack, oh-my-claudecode, ECCC | Same job as Multica / Cursor / existing planner. One spine |
+| learn-claude-code | Tutorial. Bryan already runs agents |
+| cc-switch, claude-code-router | Routing is already `https://ollama.bryanwills.org/v1` + Cursor/Hermes. Don’t add another router yet |
+| Official Anthropic skills dump, awesome-*-lists, system-prompts packs | Catalogs, not installs. Browse when a job exists |
+| Claude huddle, Codex-as-Claude-plugin | Extra Claude Code chrome. Not the LLC bottleneck |
+| OpenClaw anything | Standing rule: Hermes, not OpenClaw |
+| Open WebUI filesystem MCP → Mac `$HOME` | Open WebUI is on the NUC. That path would expose the laptop disk to the container. Hermes-on-Mac only |
+
+### Also later (not on that list, still useful)
+
+- **Graylog** — already §6 item 17
+- **Open WebUI Knowledge** ingest of Claude/ChatGPT exports (not Honcho unless we build a sync). Process: `docs/infrastructure/mac-file-hygiene.md`. Wait for Time Machine to finish before any moves.
+- **Do not** add an Open WebUI filesystem MCP pointed at Mac `$HOME`. That would mount the laptop onto the NUC.
+- **LVS / Jammy token presentation** — weekend: local NUC as default, Enterprise tokens as overflow
+- **SearXNG** — already on the NUC; use per-chat, off for Ring/customer data
+- **Paperless** — already on Tailscale `:8010` for on-prem docs
+- **Drive picker “My Drive root only”** — optional after Ring `setParent`

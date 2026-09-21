@@ -86,6 +86,12 @@ nav:
       - Cursor IDE — Local Ollama config: infrastructure/cursor-local-ollama-setup.md
       - Claude Code on Ubuntu setup: infrastructure/claude-code-ubuntu-setup.md
       - Self-hosted Honcho on ai-nuc: infrastructure/honcho-ai-nuc-setup.md
+      - Open WebUI Mac tunnel (start/stop): infrastructure/openwebui-mac-tunnel.md
+      - Mac file hygiene (Open WebUI + Hermes): infrastructure/mac-file-hygiene.md
+      - Open WebUI Google Drive: infrastructure/openwebui-google-drive.md
+      - SearXNG on ai-nuc: infrastructure/searxng-ai-nuc.md
+      - AI-NUC to gateway SSH: infrastructure/ai-nuc-to-gateway-ssh.md
+      - AI-NUC remote desktop (xrdp): infrastructure/ai-nuc-remote-desktop.md
       - Hermes + Ollama HTTP 500 fix: infrastructure/hermes-ollama-500-fix.md
       - Hermes Gmail troubleshooting (2026-08-30): infrastructure/hermes-gmail-troubleshooting-2026-08-30.md
       - Gmail cleanup scripts: infrastructure/scripts/README.md
