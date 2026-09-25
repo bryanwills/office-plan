@@ -62,9 +62,17 @@ That is KVM over Wi-Fi without a new KVM.
 
 ## Second USB Wi-Fi (small dongle, not a desk antenna)
 
-You already have a MediaTek USB radio (`0e8d:c616`) on `wlan0` at `-66 dBm` to `MooseSpencer5.0G`. Fine for the room.
+You already have a MediaTek USB radio (`0e8d:c616`) on `wlan0` at `172.16.1.232` (`MooseSpencer5.0G`). Fine for the room.
 
-For a backup radio, buy **MediaTek MT7921AU**, in-kernel on Ubuntu 24.04, no DKMS, no reboot-to-load:
+The second stick (Cudy, Realtek RTL88x2bu `0bda:b812`, MAC `d4:0d:ab:70:02:58`) uses in-kernel `rtw88_8822bu`. Linux names it `wlxd40dab700258` until we pin it:
+
+```bash
+sudo bash scripts/ai-nuc/setup-cudy-wifi.sh
+```
+
+That writes `/etc/systemd/network/10-wlan1.link`, renames the iface to **`wlan1`**, USB-resets the stick (rtw88 often comes up with USB `-71` and an empty scan), and sets **`172.16.1.233/24`**. It joins the same 5 GHz SSID **`MooseSpencer5.0G`** as `wlan0` (BSSID `28:74:F5:58:16:5C`). 2.4 GHz is not used. It does **not** take the default route (metric 700, `never-default`). No reboot. If the scan is still empty after the reset, unplug the Cudy, wait 10 seconds, and move it to a different rear USB port. If association still times out, this AP is on DFS channel 100; move `MooseSpencer5.0G` to a non-DFS 5 GHz channel (36–48 or 149–165).
+
+For a third backup radio, still prefer **MediaTek MT7921AU**, in-kernel on Ubuntu 24.04, no DKMS, no reboot-to-load:
 
 | Buy | Why |
 |---|---|
