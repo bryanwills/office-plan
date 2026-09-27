@@ -1,6 +1,6 @@
 # Paperless-ngx (ai-nuc, Tailscale only)
 
-**Status:** running on ai-nuc as of 2026-09-17  
+**Status:** running on ai-nuc as of 2026-09-17 (healthy).  
 **URL (private):** `http://ai-nuc.taild5c0d3.ts.net:8010`  
 **Not on the public internet.** Bound to Tailscale IPv4 `100.73.71.29:8010` only (Honcho already owns `:8000`).
 

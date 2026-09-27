@@ -64,6 +64,24 @@ On ai-nuc itself, `~/.honcho/config.json` still points at `http://127.0.0.1:8000
 
 Model in Hermes stays `qwen3.8:27b-hermes`, context 64000. Honcho does not replace that. It is the filing cabinet, not the desk.
 
+### Hermes API key
+
+The NUC `.env` only had Ollama placeholders (`OLLAMA_API_KEY=ollama`). Those are **not** a Honcho key. Auth was off (`USE_AUTH = false`), so no JWT existed.
+
+Mint one on ai-nuc (writes `/opt/stacks/honcho/.hermes-jwt`, mode 600):
+
+```bash
+bash scripts/ai-nuc/honcho-mint-hermes-key.sh
+```
+
+In Hermes on the Mac:
+
+- Base URL: `http://100.73.71.29:8000`
+- API key: contents of `/opt/stacks/honcho/.hermes-jwt` (copy with `cat`, do not commit)
+- Workspace / AI peer: `hermes` / `hermes`
+
+`/health` stays open. Everything else needs `Authorization: Bearer <jwt>` after the mint script turns `AUTH_USE_AUTH=true`.
+
 ---
 
 ## Deploy / update

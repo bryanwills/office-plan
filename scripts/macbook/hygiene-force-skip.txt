@@ -1,0 +1,33 @@
+# Extra SKIP names for the hygiene planner and apply script.
+# One name or relative path per line. No personal tax/W-2 filenames here.
+# Hermes and Bryan both use this list. Do not put secrets in this file.
+
+# Live mounts / libraries / vaults
+AI-NUC
+Music
+obsidian
+onedrive
+personal
+go
+plaud
+Sync
+Recovered
+nuclei-templates
+
+# Project trees that may not have .git at the folder we scanned
+code
+docs
+honcho
+vps
+vps-full-backup
+vps-full-backup.tar
+
+# Keep reports on Desktop until the project is done
+mac-file-hygiene-plan-20260920.tsv
+mac-file-inventory-20260920.txt
+
+# Known false positives from the 2026-09-20 dry-run
+dnd-ttrpg-battle-map-creature-tokens.excalidrawlib
+passwordsafe-raspbian10-1.13-armhf.deb
+passwordsafe-ubuntu20-1.13-amd64.deb
+Get-LAPSPasswords-master

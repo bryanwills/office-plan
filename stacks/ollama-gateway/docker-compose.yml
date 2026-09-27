@@ -1,0 +1,23 @@
+# Bearer-token door in front of host Ollama.
+# Bound to the Tailscale IPv4 only. Traefik on netcup reaches it over the tailnet.
+#
+# Deploy: /opt/stacks/ollama-gateway  (symlink target /mnt/ai-data/stacks/...)
+
+services:
+  ollama-gateway:
+    image: caddy:2.10-alpine
+    container_name: ollama-gateway
+    restart: unless-stopped
+    ports:
+      - "100.73.71.29:8088:8088"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - OLLAMA_PUBLIC_KEY=${OLLAMA_PUBLIC_KEY}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8088/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3

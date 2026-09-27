@@ -1,0 +1,30 @@
+# SearXNG on ai-nuc — metasearch for Open WebUI.
+# Bind Tailscale + loopback only. Do not put this on public netcup :443.
+# Runtime: /opt/stacks/searxng
+
+services:
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:8080"
+      - "100.73.71.29:8888:8080"
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro
+    environment:
+      SEARXNG_BASE_URL: http://100.73.71.29:8888/
+      SEARXNG_SECRET: ${SEARXNG_SECRET}
+      GRANIAN_HOST: "0.0.0.0"
+      GRANIAN_PORT: "8080"
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

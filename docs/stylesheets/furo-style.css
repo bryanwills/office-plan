@@ -1,0 +1,141 @@
+/*
+ * Furo-inspired styling on top of mkdocs-material.
+ * Furo (https://github.com/pradyunsg/furo) is a Sphinx theme and can't run
+ * under MkDocs/properdocs directly — this file reproduces its visual
+ * language (muted single accent, generous whitespace, quiet borders,
+ * restrained typography) on top of Material instead of switching stacks.
+ */
+
+:root {
+  --md-primary-fg-color: #2b8cee;
+  --md-primary-fg-color--light: #5aa8f2;
+  --md-primary-fg-color--dark: #1f6fc4;
+  --md-accent-fg-color: #2b8cee;
+
+  --furo-border: #e5e7eb;
+  --furo-bg-subtle: #f8f9fb;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #2b8cee;
+  --md-accent-fg-color: #5aa8f2;
+  --md-default-bg-color: #131416;
+  --md-default-fg-color: #cfd2d6;
+
+  --furo-border: #2a2c30;
+  --furo-bg-subtle: #1a1b1e;
+}
+
+/* Furo keeps the header quiet and lets the sidebar carry navigation weight */
+.md-header {
+  box-shadow: none;
+  border-bottom: 1px solid var(--furo-border);
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+}
+
+.md-header__title,
+.md-header__topic {
+  font-weight: 600;
+}
+
+.md-tabs {
+  border-bottom: 1px solid var(--furo-border);
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+}
+
+.md-tabs__link {
+  opacity: 0.75;
+}
+
+.md-tabs__link--active {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Sidebar: flatter, quieter, more like Furo's left nav */
+.md-nav {
+  font-size: 0.72rem;
+}
+
+.md-nav__title {
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+}
+
+.md-nav__link--active,
+.md-nav__link:focus,
+.md-nav__link:hover {
+  color: var(--md-primary-fg-color);
+}
+
+.md-sidebar {
+  border-right: 1px solid var(--furo-border);
+}
+
+.md-sidebar--secondary {
+  border-left: 1px solid var(--furo-border);
+  border-right: none;
+}
+
+/* Content: wider measure, calmer headings, Furo-like spacing */
+.md-content__inner {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset h2 {
+  font-weight: 600;
+  border-bottom: 1px solid var(--furo-border);
+  padding-bottom: 0.25rem;
+}
+
+.md-typeset a {
+  text-decoration: none;
+}
+
+.md-typeset a:hover {
+  text-decoration: underline;
+}
+
+/* Admonitions: subtle border + tint instead of Material's bold color blocks */
+.md-typeset .admonition,
+.md-typeset details {
+  border: 1px solid var(--furo-border);
+  border-left-width: 3px;
+  box-shadow: none;
+  background-color: var(--furo-bg-subtle);
+}
+
+/* Code blocks: quiet background, thin border, like Furo's */
+.md-typeset code {
+  background-color: var(--furo-bg-subtle);
+}
+
+.md-typeset pre > code {
+  border: 1px solid var(--furo-border);
+}
+
+.md-typeset table:not([class]) {
+  border: 1px solid var(--furo-border);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--furo-bg-subtle);
+}
+
+.md-footer {
+  background-color: var(--furo-bg-subtle);
+  color: var(--md-default-fg-color);
+}
+
+.md-footer-meta {
+  background-color: var(--furo-bg-subtle);
+}

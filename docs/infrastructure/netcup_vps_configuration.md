@@ -1,3 +1,5 @@
+# netcup VPS Configuration
+
 System information:
 
    IP address:     152.53.82.233

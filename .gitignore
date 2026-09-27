@@ -25,3 +25,9 @@ docs/resources/temp.zip
 media/**
 
 .cache_ggshield
+
+# Mac hygiene reports contain personal filenames (tax, billing, contracts).
+# Keep them on disk for review. Do not publish this public repo.
+scripts/macbook/mac-file-hygiene-plan-*.tsv
+scripts/macbook/mac-file-inventory-*.txt
+scripts/macbook/mac-file-hygiene-apply-*.log
