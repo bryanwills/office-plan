@@ -1,0 +1,41 @@
+# File on netcup: /opt/stacks/traefik/dynamic/argo.yml
+#
+# Public name: https://argo.bryanwills.dev
+# TLS on netcup Traefik. Backend is k3d Argo CD on the NUC over Tailscale.
+# DNS A argo → 152.53.82.233 (already created).
+#
+# NUC bind: 100.73.71.29:8081 → k3d load balancer :80 → Ingress → argocd-server
+http:
+  routers:
+    argo-http:
+      rule: "Host(`argo.bryanwills.dev`)"
+      entryPoints:
+        - web
+      middlewares:
+        - argo-https-redirect
+      service: argo
+
+    argo-secure:
+      rule: "Host(`argo.bryanwills.dev`)"
+      entryPoints:
+        - websecure
+      service: argo
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    argo-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    argo:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://100.73.71.29:8081"
+        healthCheck:
+          path: /
+          interval: "15s"
+          timeout: "5s"

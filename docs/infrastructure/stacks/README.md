@@ -21,6 +21,7 @@ Real secrets live in server-side `.env` files only. This repo may contain
 | Buzz | agentic workspace (`buzz.bryanwills.dev`) | [SETUP](buzz/SETUP.md) |
 | Ollama HTTPS | `ollama.bryanwills.org` → Tailscale NUC | [dynamic/ollama.yml](traefik/dynamic/ollama.yml), [guide](../ollama-public-https.md) |
 | OneDev | git + issues + CI (`onedev.bryanwills.dev`) | [SETUP](onedev/SETUP.md) |
+| Argo CD | GitOps lab UI (`argo.bryanwills.dev`) → k3d on ai-nuc | [SETUP](argocd/SETUP.md) |
 
 Little Creek decommission timing for the stacks that already cut over is
 **not decided**. Ask before deleting anything there.
