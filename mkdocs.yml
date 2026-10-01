@@ -107,6 +107,7 @@ nav:
           - Overview: infrastructure/stacks/README.md
           - ai-nuc stacks setup: infrastructure/stacks/ai-nuc-stacks-setup.md
           - Buzz setup on netcup: infrastructure/stacks/buzz/SETUP.md
+          - OneDev setup on netcup: infrastructure/stacks/onedev/SETUP.md
           - Vaultwarden migration: infrastructure/stacks/vaultwarden/MIGRATION.md
           - HashiCorp Vault migration: infrastructure/stacks/hashicorp/MIGRATION.md
           - Nginx + PHP-FPM migration: infrastructure/stacks/nginx/MIGRATION.md

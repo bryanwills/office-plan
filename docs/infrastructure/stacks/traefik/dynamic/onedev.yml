@@ -1,0 +1,33 @@
+# Static route for OneDev. Docker provider is disabled on this host.
+# File on netcup: /opt/stacks/traefik/dynamic/onedev.yml
+# Container `onedev` must be on the shared `proxy` network.
+http:
+  routers:
+    onedev-http:
+      rule: "Host(`onedev.bryanwills.dev`)"
+      entryPoints:
+        - web
+      middlewares:
+        - onedev-https-redirect
+      service: onedev
+
+    onedev-secure:
+      rule: "Host(`onedev.bryanwills.dev`)"
+      entryPoints:
+        - websecure
+      service: onedev
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    onedev-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    onedev:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://onedev:6610"

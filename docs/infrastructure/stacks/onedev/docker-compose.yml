@@ -1,0 +1,28 @@
+# OneDev on netcup. Path: /opt/stacks/onedev/
+# Official image docs: https://docs.onedev.io/installation-guide/run-as-docker-container
+#
+# Web UI is NOT published on the host. Traefik file provider routes
+# onedev.bryanwills.dev → http://onedev:6610 on the shared `proxy` network.
+# SSH git is published on 6611 only (git@ / ssh:// clone URL).
+services:
+  onedev:
+    image: 1dev/server:latest
+    container_name: onedev
+    restart: unless-stopped
+    environment:
+      initial_user: ${INITIAL_USER}
+      initial_password: ${INITIAL_PASSWORD}
+      initial_email: ${INITIAL_EMAIL}
+      initial_server_url: ${INITIAL_SERVER_URL}
+      initial_ssh_root_url: ${INITIAL_SSH_ROOT_URL}
+    volumes:
+      - ./data:/opt/onedev
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "6611:6611"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
