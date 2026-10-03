@@ -1,10 +1,11 @@
 # File on netcup: /opt/stacks/traefik/dynamic/argo.yml
 #
 # Public name: https://argo.bryanwills.dev
-# TLS on netcup Traefik. Backend is k3d Argo CD on the NUC over Tailscale.
+# TLS on netcup Traefik. Backend is k3s Argo CD on littlecreek over Tailscale.
 # DNS A argo → 152.53.82.233 (already created).
 #
-# NUC bind: 100.73.71.29:8081 → k3d load balancer :80 → Ingress → argocd-server
+# littlecreek: 100.85.240.30:8081 → argocd-server-tailnet Service → argocd-server
+# Previous backend was ai-nuc k3d 100.73.71.29:8081. That cluster was stopped 2026-10-03.
 http:
   routers:
     argo-http:
@@ -34,7 +35,7 @@ http:
       loadBalancer:
         passHostHeader: true
         servers:
-          - url: "http://100.73.71.29:8081"
+          - url: "http://100.85.240.30:8081"
         healthCheck:
           path: /
           interval: "15s"

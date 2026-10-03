@@ -1,42 +1,44 @@
 # Argo CD lab (`argo.bryanwills.dev`)
 
-**Status:** Deployed 2026-09-30  
-**Cluster:** k3d `gitops` on ai-nuc  
-**Public TLS:** netcup Traefik → Tailscale `100.73.71.29:8081`  
+**Status:** Moved 2026-10-03  
+**Cluster:** single-node k3s on littlecreek (`v1.36.5+k3s1`, node IP `100.85.240.30`)  
+**Public TLS:** netcup Traefik → Tailscale `100.85.240.30:8081`  
 **Upstream:** [Argo CD getting started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+
+The 2026-09-30 k3d cluster `gitops` on ai-nuc was stopped 2026-10-03 (`0/1` servers). The littlecreek admin password was changed the same evening and the bootstrap secret was deleted.
 
 This is a **practice cluster**. It does not manage netcup Compose stacks (Vault, Buzz, OneDev, nginx).
 
 ---
 
-## Why the NUC, with a netcup hostname
+## Why littlecreek, with a netcup hostname
 
-Argo CD needs Kubernetes. netcup is Docker + Traefik for live sites. Same pattern as `ollama.bryanwills.org`:
+Argo CD needs Kubernetes. netcup is Docker + Traefik for live sites. littlecreek is the single-node k3s control plane, so GitOps stays up while the NUC travels.
 
 ```
 browser  --443-->  argo.bryanwills.dev (netcup Traefik, Let's Encrypt)
                         │
-                        │  Tailscale, not the AT&T WAN
+                        │  Tailscale, not the public NIC
                         ▼
-                   ai-nuc 100.73.71.29:8081  (k3d load balancer, Tailscale bind only)
+                   littlecreek 100.85.240.30:8081  (Service externalIP only)
                         │
                         ▼
-                   Ingress → argocd-server (HTTP insecure inside the cluster)
+                   argocd-server (HTTP insecure inside the cluster)
 ```
 
-`:8081` is bound to the Tailscale address only. It is not on `0.0.0.0`.
+`:8081` is on the Tailscale address only. Public `:8081`, `:80`, `:443`, and `:6443` on littlecreek are closed.
 
 ---
 
-## What's running on ai-nuc
+## What's running on littlecreek
 
 | Piece | Detail |
 |-------|--------|
-| k3d | `~/.local/bin/k3d` v5.9.0, cluster name `gitops` |
-| kubectl | `~/.local/bin/kubectl`, kubeconfig `~/.kube/config` |
+| k3s | `v1.36.5+k3s1`, Ubuntu 24.04.5, kubeconfig `/etc/rancher/k3s/k3s.yaml` |
+| kubectl | `sudo k3s kubectl` |
 | Argo CD | official `stable` manifests, namespace `argocd` |
-| Ingress | `docs/infrastructure/stacks/argocd/ingress.yaml` |
-| Insecure HTTP | `argocd-cmd-params-cm` `server.insecure=true` so Traefik can terminate TLS |
+| Tailnet Service | `docs/infrastructure/stacks/argocd/tailnet-service.yaml` |
+| Insecure HTTP | `argocd-cmd-params-cm` `server.insecure=true` so netcup Traefik can terminate TLS |
 | `url` | `https://argo.bryanwills.dev` in `argocd-cm` |
 
 ---
@@ -48,14 +50,13 @@ browser  --443-->  argo.bryanwills.dev (netcup Traefik, Let's Encrypt)
 3. Password (do not store this in git):
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
+sudo k3s kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
 4. Change the password in the UI, then delete the bootstrap secret:
 
 ```bash
-kubectl -n argocd delete secret argocd-initial-admin-secret
+sudo k3s kubectl -n argocd delete secret argocd-initial-admin-secret
 ```
 
 ---
@@ -63,10 +64,13 @@ kubectl -n argocd delete secret argocd-initial-admin-secret
 ## Useful commands
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-kubectl -n argocd get pods
-k3d cluster list
-k3d cluster stop gitops
+sudo k3s kubectl get nodes -o wide
+sudo k3s kubectl -n argocd get pods
+```
+
+ai-nuc k3d `gitops` is stopped (`0/1` servers). Start it again only to inspect the old cluster:
+
+```bash
 k3d cluster start gitops
 ```
 
@@ -92,16 +96,16 @@ Git source can later be OneDev (`https://onedev.bryanwills.dev/<project>`) or Gi
 Traefik file on netcup: `/opt/stacks/traefik/dynamic/argo.yml`  
 Repo copy: `docs/infrastructure/stacks/traefik/dynamic/argo.yml`
 
-No Traefik restart. If the NUC or k3d is down, the name will 502 until the backend is back.
+No Traefik restart. If littlecreek or the `argocd-server` pod is down, the name will 502 until the backend is back.
 
 ---
 
 ## What this is not
 
 - Not GitOps for netcup `/opt/stacks`.
-- Not a second production control plane on the VPS.
+- Not a second production control plane for the netcup Compose apps.
 - Do not install k3s on netcup next to Traefik without a separate decision.
 
 ---
 
-*Last updated: 2026-09-30*
+*Last updated: 2026-10-03*

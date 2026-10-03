@@ -96,7 +96,7 @@ Embedded HSQL is fine for a personal instance. Move to Postgres later if the dat
 
 ## Argo CD (not this stack)
 
-OneDev is Git + CI on Docker. Argo CD needs a Kubernetes cluster. Practice path is k3s + Argo on the AI-NUC (Tailscale UI), with this OneDev (or GitHub) as the Git source. Do not install k3s on netcup next to Traefik/Compose without a separate decision.
+OneDev is Git + CI on Docker. Argo CD runs on the littlecreek k3s node (Tailscale UI via netcup Traefik), with this OneDev (or GitHub) as the Git source. Do not install k3s on netcup next to Traefik/Compose without a separate decision.
 
 ---
 
