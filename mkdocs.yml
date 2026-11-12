@@ -68,6 +68,14 @@ plugins:
 
 nav:
   - Home: index.md
+  - Product Vision:
+      - vision/index.md
+      - The assistant: vision/assistant.md
+      - Wearables & hardware roadmap: vision/wearables-and-hardware.md
+      - Local-first AI architecture: vision/local-ai-architecture.md
+      - Benchmarks & case studies: vision/benchmarks-and-case-studies.md
+      - Business model: vision/business-model.md
+      - Open-source builds: vision/open-source-builds.md
   - Formation:
       - Entity & Name Decision: formation/entity-decision.md
       - Articles of Organization (KY): formation/articles-of-organization.md
